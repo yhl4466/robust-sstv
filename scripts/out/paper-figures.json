@@ -1,0 +1,34 @@
+{
+  "generatedAt": "2026-10-02T11:58:43.408Z",
+  "width": 1200,
+  "figures": {
+    "fig4": {
+      "file": "tests/paper-figures/fig4-afc-offset.svg",
+      "bytes": 4141
+    },
+    "fig5": {
+      "file": "tests/paper-figures/fig5-clock-recovery.svg",
+      "bytes": 5924
+    },
+    "fig7": {
+      "file": "tests/paper-figures/fig7-interleave-burst.svg",
+      "bytes": 12554
+    },
+    "fig10": {
+      "file": "tests/paper-figures/fig10-b-sweep.svg",
+      "bytes": 5745
+    },
+    "fig11": {
+      "file": "tests/paper-figures/fig11-content-dependence.svg",
+      "bytes": 7648
+    },
+    "fig12": {
+      "file": "tests/paper-figures/fig12-real-audio.svg",
+      "bytes": 4145
+    },
+    "fig13": {
+      "file": "tests/paper-figures/fig13-postprocess.svg",
+      "bytes": 3553
+    }
+  }
+}

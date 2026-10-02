@@ -1,0 +1,44 @@
+{
+  "appliedAt": "2026-10-01T23:43:15.739Z",
+  "rules": [
+    [
+      "sstv-web-hide",
+      "robust-sstv"
+    ],
+    [
+      "SSTV web hide",
+      "Robust SSTV"
+    ],
+    [
+      "SSTV Web Hide",
+      "Robust SSTV"
+    ],
+    [
+      "抗干扰 SSTV 图片隐藏",
+      "鲁棒 SSTV 解码"
+    ],
+    [
+      "SSTV 图片隐藏",
+      "鲁棒 SSTV 解码"
+    ]
+  ],
+  "filesChanged": 1,
+  "totalHits": 3,
+  "log": [
+    {
+      "file": "../阶段一技术方案.md",
+      "changes": [
+        {
+          "from": "sstv-web-hide",
+          "to": "robust-sstv",
+          "count": 2
+        },
+        {
+          "from": "抗干扰 SSTV 图片隐藏",
+          "to": "鲁棒 SSTV 解码",
+          "count": 1
+        }
+      ]
+    }
+  ]
+}

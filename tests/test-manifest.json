@@ -1,0 +1,144 @@
+{
+  "generatedAt": "2026-10-02T00:58:26.648Z",
+  "node": "v24.19.0",
+  "ran": true,
+  "totals": {
+    "entries": 13,
+    "verdictSuites": 11,
+    "verdictPass": 10,
+    "verdictFail": 1,
+    "diagnostic": 2
+  },
+  "results": [
+    {
+      "file": "tests/verify-signal.js",
+      "kind": "verdict",
+      "covers": "编码器逐样本频率与行结构",
+      "exists": true,
+      "ms": 4783,
+      "exitCode": 0,
+      "verdict": "ENCODER VERIFIED",
+      "status": "pass"
+    },
+    {
+      "file": "tests/roundtrip.js",
+      "kind": "verdict",
+      "covers": "四模式编码往返与图象保真度",
+      "exists": true,
+      "ms": 376434,
+      "exitCode": 0,
+      "verdict": "ALL CHECKS PASSED",
+      "status": "pass"
+    },
+    {
+      "file": "tests/channel-sim.test.js",
+      "kind": "verdict",
+      "covers": "信道模拟器五类退化",
+      "exists": true,
+      "ms": 1716,
+      "exitCode": 0,
+      "verdict": "CHANNELSIM VERIFIED",
+      "status": "pass"
+    },
+    {
+      "file": "tests/fec-rs.test.js",
+      "kind": "verdict",
+      "covers": "里德-所罗门编解码与三重验证",
+      "exists": true,
+      "ms": 793,
+      "exitCode": 0,
+      "verdict": "FECRS VERIFIED",
+      "status": "pass"
+    },
+    {
+      "file": "tests/interleaver.test.js",
+      "kind": "verdict",
+      "covers": "交织往返与突发分散",
+      "exists": true,
+      "ms": 427,
+      "exitCode": 0,
+      "verdict": "INTERLEAVER VERIFIED",
+      "status": "pass"
+    },
+    {
+      "file": "tests/image-codec.test.js",
+      "kind": "verdict",
+      "covers": "秘密图编解码与图片帧",
+      "exists": true,
+      "ms": 1511,
+      "exitCode": 0,
+      "verdict": "IMAGECODEC VERIFIED",
+      "status": "pass"
+    },
+    {
+      "file": "tests/pd-modes.test.js",
+      "kind": "verdict",
+      "covers": "PD120 与 PD180 往返",
+      "exists": true,
+      "ms": 344257,
+      "exitCode": 0,
+      "verdict": "PD MODES VERIFIED",
+      "status": "pass"
+    },
+    {
+      "file": "tests/tech-html.test.js",
+      "kind": "verdict",
+      "covers": "技术报告结构、几何与文风",
+      "exists": true,
+      "ms": 211,
+      "exitCode": 0,
+      "verdict": "TECH HTML VERIFIED",
+      "status": "pass"
+    },
+    {
+      "file": "tests/e2e-full.js",
+      "kind": "verdict",
+      "covers": "四模式完整链路（图→音频→信道→图）",
+      "exists": true,
+      "ms": 162818,
+      "exitCode": 0,
+      "verdict": "E2E FULL VERIFIED",
+      "status": "pass"
+    },
+    {
+      "file": "tests/browser-e2e.js",
+      "kind": "verdict",
+      "covers": "浏览器端到端流程",
+      "exists": true,
+      "ms": 289412,
+      "exitCode": 1,
+      "verdict": "BROWSER E2E: 3 CHECK(S) FAILED",
+      "status": "fail"
+    },
+    {
+      "file": "tests/image-pages-e2e.js",
+      "kind": "verdict",
+      "covers": "图片隐藏两个页面端到端",
+      "exists": true,
+      "ms": 321699,
+      "exitCode": 0,
+      "verdict": "IMAGE PAGES E2E: ALL CHECKS PASSED",
+      "status": "pass"
+    },
+    {
+      "file": "tests/diagnose-align.js",
+      "kind": "diagnostic",
+      "covers": "同步对齐诊断",
+      "exists": true,
+      "ms": 4488,
+      "exitCode": 0,
+      "verdict": null,
+      "status": "pass"
+    },
+    {
+      "file": "tests/perf.js",
+      "kind": "benchmark",
+      "covers": "性能基准",
+      "exists": true,
+      "ms": 105824,
+      "exitCode": 0,
+      "verdict": null,
+      "status": "pass"
+    }
+  ]
+}

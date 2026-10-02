@@ -1,0 +1,32 @@
+{
+  "measuredAt": "2026-10-02T12:45:09.395Z",
+  "sampleRate": 48000,
+  "quality": "standard",
+  "passed": 25,
+  "failed": 0,
+  "measured": {
+    "pd120Ramp": {
+      "psnr": 32.46190939044247,
+      "durationS": 127.11304000000118,
+      "decodeMs": 50949
+    },
+    "pd120Colour": {
+      "psnr": 28.49378242498435,
+      "barsCorrect": 6,
+      "barsTotal": 6
+    },
+    "pd180": {
+      "psnr": 32.62421733632446,
+      "durationS": 187.4266400000027,
+      "decodeMs": 90022
+    },
+    "m1Control": {
+      "psnr": 31.953825563347475
+    }
+  },
+  "windowFactorPd": 8,
+  "scanTime": {
+    "pd120": 0.1216,
+    "pd180": 0.1824
+  }
+}

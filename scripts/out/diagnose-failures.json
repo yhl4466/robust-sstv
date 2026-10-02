@@ -1,0 +1,160 @@
+{
+  "ablation": [
+    {
+      "id": "clean",
+      "label": "untouched",
+      "ok": true,
+      "stage": null,
+      "psnr": 26.70815058517079
+    },
+    {
+      "id": "ssb-only",
+      "label": "SSB 300-2700 only",
+      "ok": true,
+      "stage": null,
+      "psnr": 14.198246499219358
+    },
+    {
+      "id": "hum-only",
+      "label": "50 Hz hum -20 dB only",
+      "ok": true,
+      "stage": null,
+      "psnr": 25.330096755461106
+    },
+    {
+      "id": "adjacent-only",
+      "label": "adjacent 2700 Hz tone -14 dB only",
+      "ok": true,
+      "stage": null,
+      "psnr": 20.83364784469125
+    },
+    {
+      "id": "adjacent-2850",
+      "label": "adjacent 2850 Hz tone -14 dB only",
+      "ok": true,
+      "stage": null,
+      "psnr": 20.86230549579668
+    },
+    {
+      "id": "lp-only",
+      "label": "low-pass 2700 Hz only (no HP)",
+      "ok": true,
+      "stage": null,
+      "psnr": 26.28187429443088
+    },
+    {
+      "id": "tilt-only",
+      "label": "band tilt -8/-14 dB only",
+      "ok": true,
+      "stage": null,
+      "psnr": 26.088363972901885
+    },
+    {
+      "id": "rir-only",
+      "label": "room RT60 0.4 s only",
+      "ok": true,
+      "stage": null,
+      "psnr": 15.081449087656596
+    },
+    {
+      "id": "tilt+rir",
+      "label": "tilt + room 0.4 s",
+      "ok": false,
+      "stage": "findHeader",
+      "psnr": null
+    },
+    {
+      "id": "ssb-hum",
+      "label": "SSB + hum (the failing recipe)",
+      "ok": false,
+      "stage": "findHeader",
+      "psnr": null
+    },
+    {
+      "id": "ssb-adjacent",
+      "label": "SSB + adjacent (the failing recipe)",
+      "ok": false,
+      "stage": "findHeader",
+      "psnr": null
+    }
+  ],
+  "crossover": [
+    {
+      "ppm": 0,
+      "trueA": 1,
+      "rawPsnr": 26.711767886179114,
+      "affinePsnr": 26.70815058517079,
+      "affineA": 1.0000002866700533,
+      "rawOk": true,
+      "affineOk": true,
+      "rawStage": null,
+      "affineStage": null
+    },
+    {
+      "ppm": 200,
+      "trueA": 1.0002,
+      "rawPsnr": 26.810774529607574,
+      "affinePsnr": 26.770414675228,
+      "affineA": 1.000200306546104,
+      "rawOk": true,
+      "affineOk": true,
+      "rawStage": null,
+      "affineStage": null
+    },
+    {
+      "ppm": 1000,
+      "trueA": 1.001,
+      "rawPsnr": 25.675740488114712,
+      "affinePsnr": 26.232768139497175,
+      "affineA": 1.001000637420967,
+      "rawOk": true,
+      "affineOk": true,
+      "rawStage": null,
+      "affineStage": null
+    },
+    {
+      "ppm": 5000,
+      "trueA": 1.005,
+      "rawPsnr": 18.763832785928468,
+      "affinePsnr": 20.1841483853889,
+      "affineA": 1.0049990667822142,
+      "rawOk": true,
+      "affineOk": true,
+      "rawStage": null,
+      "affineStage": null
+    },
+    {
+      "ppm": 10000,
+      "trueA": 1.01,
+      "rawPsnr": 16.17615652660049,
+      "affinePsnr": 17.43205207701442,
+      "affineA": 1.0099998311373484,
+      "rawOk": true,
+      "affineOk": true,
+      "rawStage": null,
+      "affineStage": null
+    },
+    {
+      "ppm": 20000,
+      "trueA": 1.02,
+      "rawPsnr": 10.405313878405263,
+      "affinePsnr": 10.986027033340243,
+      "affineA": 1.0938975792363521,
+      "rawOk": true,
+      "affineOk": true,
+      "rawStage": null,
+      "affineStage": null
+    },
+    {
+      "ppm": 50000,
+      "trueA": 1.05,
+      "rawPsnr": null,
+      "affinePsnr": null,
+      "affineA": null,
+      "rawOk": false,
+      "affineOk": false,
+      "rawStage": "findHeader",
+      "affineStage": "findHeader"
+    }
+  ]
+}

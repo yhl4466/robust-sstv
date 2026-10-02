@@ -1,0 +1,64 @@
+{
+  "mode": "M1",
+  "blockSize": 32,
+  "delta": 12,
+  "nsym": 32,
+  "seeds": 4,
+  "secret": {
+    "source": "256x256 synthetic",
+    "final": {
+      "W": 16,
+      "H": 16
+    },
+    "bpp": 6,
+    "dataBytes": 192,
+    "frameBytes": 207,
+    "reconPsnr": 36.66136101940786
+  },
+  "rows": [
+    {
+      "channel": "clean",
+      "seeds": 1,
+      "secretExactRate": 1,
+      "publicPsnr": 29.981910759985656,
+      "secretMeta": {
+        "success": true,
+        "W": 16,
+        "H": 16,
+        "format": 0,
+        "formatName": "QIMG",
+        "bpp": 6,
+        "dither": true,
+        "autoScaled": true,
+        "dataBytes": 192,
+        "frameBytes": 207,
+        "displayScale": 16,
+        "payloadBytes": 207,
+        "payloadRecovered": true,
+        "reason": ""
+      }
+    },
+    {
+      "channel": "mild",
+      "seeds": 4,
+      "secretExactRate": 1,
+      "publicPsnr": 26.83168329720701,
+      "secretMeta": {
+        "success": true,
+        "W": 16,
+        "H": 16,
+        "format": 0,
+        "formatName": "QIMG",
+        "bpp": 6,
+        "dither": true,
+        "autoScaled": true,
+        "dataBytes": 192,
+        "frameBytes": 207,
+        "displayScale": 16,
+        "payloadBytes": 207,
+        "payloadRecovered": true,
+        "reason": ""
+      }
+    }
+  ]
+}

@@ -1,0 +1,302 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="utf-8"><title>鍥炬簮璇枡鐢熸垚鍣?/title></head>
+<body>
+<pre id="out">(pending)</pre>
+<script src="./fixtures/photo-data.js"></script>
+<script>
+/*
+ * Phase-3 image corpus generator - runs in the browser because Node has no canvas,
+ * and because real TEXT rasterisation (class C) cannot be faked convincingly.
+ *
+ * Classes (10 images each):
+ *   A photo-like   : the one real photo we have, plus resized/cropped variants.
+ *                    HONESTLY LABELLED: same scene, so it UNDERSTATES within-class
+ *                    variance. Spectral-natural synthetics provide the independent
+ *                    control (class F).
+ *   B high-contrast bars/graphics
+ *   C screen captures with real rendered text
+ *   D cartoon / vector-like flat regions with hard outlines
+ *   E low-contrast smooth gradients
+ *   F 1/f^alpha spectral synthetics (the defining statistic of natural images)
+ *
+ * The final corpus is resized to the mode raster (320x256) by the caller's fitToMode,
+ * so here we render at 400x300 (deliberately NOT the raster size) to keep the same
+ * scaling path the app uses.
+ */
+const W = 400, H = 300;
+const out = [];
+function log(k, v) { out.push(k + '=' + v); document.getElementById('out').textContent = out.join('\n'); }
+
+function mulberry32(seed) {
+  let a = seed >>> 0;
+  return function () {
+    a = (a + 0x6D2B79F5) >>> 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+function newCanvas() {
+  const c = document.createElement('canvas');
+  c.width = W; c.height = H;
+  return c;
+}
+function hsl(h, s, l) { return `hsl(${h},${s}%,${l}%)`; }
+
+// ---------------- B: high-contrast bars / graphics ----------------
+function makeBars(i, rnd) {
+  const c = newCanvas(), g = c.getContext('2d');
+  const n = 4 + (i % 6);
+  const vertical = i % 3 !== 0;
+  for (let k = 0; k < n; k++) {
+    // saturated, fully-contrasting colours
+    g.fillStyle = hsl((k * 360 / n + i * 23) % 360, 100, (k % 2) ? 50 : 100);
+    if (vertical) g.fillRect(Math.floor(k * W / n), 0, Math.ceil(W / n) + 1, H);
+    else g.fillRect(0, Math.floor(k * H / n), W, Math.ceil(H / n) + 1);
+  }
+  // add hard-edged geometry to raise edge density
+  g.fillStyle = '#000';
+  for (let k = 0; k < 3 + (i % 5); k++) {
+    g.fillRect((i * 37 + k * 61) % W, (i * 53 + k * 29) % H, 20 + (k * 13) % 60, 20 + (k * 17) % 50);
+  }
+  return c;
+}
+
+// ---------------- C: screen capture with real text ----------------
+function makeScreenshot(i, rnd) {
+  const c = newCanvas(), g = c.getContext('2d');
+  const dark = i % 2 === 0;
+  g.fillStyle = dark ? '#1e1e1e' : '#ffffff';
+  g.fillRect(0, 0, W, H);
+  // a fake window chrome bar
+  g.fillStyle = dark ? '#2d2d30' : '#e8e8e8';
+  g.fillRect(0, 0, W, 22);
+  g.fillStyle = dark ? '#cccccc' : '#333333';
+  g.font = 'bold 12px monospace';
+  g.fillText('editor 鈥?sample' + i + '.js', 8, 15);
+
+  const lines = [
+    'function decode(bytes) {',
+    '  const syn = syndromes(bytes, 32);',
+    '  if (allZero(syn)) return bytes;',
+    '  let loc = berlekampMassey(syn);',
+    '  const pos = chienSearch(loc, 255);',
+    '  return solveMagnitudes(syn, pos);',
+    '}',
+    '// 娉ㄩ噴锛氫腑鏂囨枃鏈篃瑕佹覆鏌撹繘鏉? + i,
+    'const table = [1, 2, 3, 4, 5, 6, 7, 8];',
+    'export default { decode, table };'
+  ];
+  const fs = 11 + (i % 4);
+  g.font = fs + 'px monospace';
+  g.fillStyle = dark ? '#d4d4d4' : '#111111';
+  const lineH = fs + 5;
+  for (let k = 0; k < lines.length; k++) {
+    g.fillText(lines[k], 10, 44 + k * lineH);
+  }
+  // horizontal rule lines (very high-contrast thin edges)
+  g.strokeStyle = dark ? '#555' : '#bbb';
+  for (let k = 0; k < 4 + (i % 4); k++) {
+    g.beginPath();
+    g.moveTo(0, H - 20 - k * 12);
+    g.lineTo(W, H - 20 - k * 12);
+    g.stroke();
+  }
+  // a small filled table block
+  g.fillStyle = dark ? '#3a3a3a' : '#dddddd';
+  for (let r = 0; r < 4; r++) {
+    for (let ccol = 0; ccol < 6; ccol++) {
+      if ((r + ccol + i) % 3 === 0) g.fillRect(250 + ccol * 24, 40 + r * 14, 22, 12);
+    }
+  }
+  return c;
+}
+
+// ---------------- D: cartoon / vector ----------------
+function makeCartoon(i, rnd) {
+  const c = newCanvas(), g = c.getContext('2d');
+  g.fillStyle = hsl((i * 40) % 360, 60, 92);
+  g.fillRect(0, 0, W, H);
+  // flat colour regions with hard black outlines
+  for (let k = 0; k < 8 + (i % 6); k++) {
+    const x = (i * 31 + k * 47) % (W - 80);
+    const y = (i * 59 + k * 41) % (H - 80);
+    const w = 40 + (k * 23) % 90, h = 40 + (k * 31) % 80;
+    g.beginPath();
+    if (k % 2) {
+      g.arc(x + w / 2, y + h / 2, Math.min(w, h) / 2, 0, Math.PI * 2);
+    } else {
+      g.rect(x, y, w, h);
+    }
+    g.fillStyle = hsl((i * 71 + k * 37) % 360, 85, 55);
+    g.fill();
+    g.lineWidth = 3;
+    g.strokeStyle = '#000';
+    g.stroke();
+  }
+  // a flat horizon
+  g.fillStyle = hsl(200, 70, 60);
+  g.fillRect(0, H * 0.7, W, H * 0.3);
+  g.strokeStyle = '#000'; g.lineWidth = 3;
+  g.beginPath(); g.moveTo(0, H * 0.7); g.lineTo(W, H * 0.7); g.stroke();
+  return c;
+}
+
+// ---------------- E: low-contrast smooth ----------------
+function makeSmooth(i, rnd) {
+  const c = newCanvas(), g = c.getContext('2d');
+  const base = 100 + (i % 5) * 10;
+  const grad = g.createLinearGradient(0, 0, W, H);
+  grad.addColorStop(0, `rgb(${base},${base},${base})`);
+  grad.addColorStop(0.5, `rgb(${base + 12},${base + 8},${base + 4})`);
+  grad.addColorStop(1, `rgb(${base - 10},${base - 6},${base - 2})`);
+  g.fillStyle = grad;
+  g.fillRect(0, 0, W, H);
+  // extremely gentle low-frequency blobs, kept inside a ~16-level window
+  for (let k = 0; k < 6; k++) {
+    const x = (i * 43 + k * 67) % W, y = (i * 29 + k * 53) % H;
+    const r = 60 + (k * 31) % 90;
+    const rg = g.createRadialGradient(x, y, 0, x, y, r);
+    const v = base + ((k % 2) ? 7 : -7);
+    rg.addColorStop(0, `rgba(${v},${v},${v},0.6)`);
+    rg.addColorStop(1, `rgba(${v},${v},${v},0)`);
+    g.fillStyle = rg;
+    g.fillRect(0, 0, W, H);
+  }
+  return c;
+}
+
+// ---------------- F: 1/f^alpha spectral synthetic ----------------
+/*
+ * Natural images have a power spectrum that falls roughly as 1/f^alpha with
+ * alpha ~ 1.0-1.4. Synthesising images with that spectrum gives a source with
+ * natural second-order statistics but an independent realisation, which is what the
+ * one-real-photo problem needs as a control.
+ */
+function makeSpectral(i, rnd, alpha) {
+  const c = newCanvas(), g = c.getContext('2d');
+  const img = g.createImageData(W, H);
+  // build in the frequency domain with a 2D FFT over a padded window, one channel
+  const N = 256;                      // square working size, upsampled to W x H
+  const re = new Float64Array(N * N), im = new Float64Array(N * N);
+  for (let y = 0; y < N; y++) {
+    for (let x = 0; x < N; x++) {
+      const kx = (x <= N / 2) ? x : x - N;
+      const ky = (y <= N / 2) ? y : y - N;
+      const f = Math.sqrt(kx * kx + ky * ky);
+      const amp = f === 0 ? 0 : Math.pow(f, -alpha / 2);
+      const ph = rnd() * Math.PI * 2;
+      re[y * N + x] = amp * Math.cos(ph);
+      im[y * N + x] = amp * Math.sin(ph);
+    }
+  }
+  fft2(re, im, N, false);
+  // normalise and write
+  let mn = Infinity, mx = -Infinity;
+  for (let k = 0; k < N * N; k++) { if (re[k] < mn) mn = re[k]; if (re[k] > mx) mx = re[k]; }
+  const scale = (mx - mn) || 1;
+  for (let y = 0; y < H; y++) {
+    for (let x = 0; x < W; x++) {
+      const sx = Math.floor(x * N / W), sy = Math.floor(y * N / H);
+      let v = (re[sy * N + sx] - mn) / scale;
+      v = 60 + v * 140;                       // mid-tone bias, natural-ish range
+      const o = (y * W + x) * 4;
+      img.data[o] = v; img.data[o + 1] = v; img.data[o + 2] = v; img.data[o + 3] = 255;
+    }
+  }
+  g.putImageData(img, 0, 0);
+  return c;
+}
+/** Iterative radix-2 2D FFT (in place). */
+function fft2(re, im, N, inverse) {
+  const rows = new Float64Array(N), rowi = new Float64Array(N);
+  for (let y = 0; y < N; y++) {
+    for (let x = 0; x < N; x++) { rows[x] = re[y * N + x]; rowi[x] = im[y * N + x]; }
+    fft1(rows, rowi, inverse);
+    for (let x = 0; x < N; x++) { re[y * N + x] = rows[x]; im[y * N + x] = rowi[x]; }
+  }
+  const cols = new Float64Array(N), coli = new Float64Array(N);
+  for (let x = 0; x < N; x++) {
+    for (let y = 0; y < N; y++) { cols[y] = re[y * N + x]; coli[y] = im[y * N + x]; }
+    fft1(cols, coli, inverse);
+    for (let y = 0; y < N; y++) { re[y * N + x] = cols[y]; im[y * N + x] = coli[y]; }
+  }
+}
+function fft1(re, im, inverse) {
+  const n = re.length;
+  for (let i = 1, j = 0; i < n; i++) {
+    let bit = n >> 1;
+    for (; j & bit; bit >>= 1) j ^= bit;
+    j ^= bit;
+    if (i < j) { let t = re[i]; re[i] = re[j]; re[j] = t; t = im[i]; im[i] = im[j]; im[j] = t; }
+  }
+  for (let len = 2; len <= n; len <<= 1) {
+    const ang = (inverse ? 2 : -2) * Math.PI / len;
+    const wr = Math.cos(ang), wi = Math.sin(ang);
+    for (let i = 0; i < n; i += len) {
+      let cr = 1, ci = 0;
+      for (let k = 0; k < len / 2; k++) {
+        const ur = re[i + k], ui = im[i + k];
+        const vr = re[i + k + len / 2] * cr - im[i + k + len / 2] * ci;
+        const vi = re[i + k + len / 2] * ci + im[i + k + len / 2] * cr;
+        re[i + k] = ur + vr; im[i + k] = ui + vi;
+        re[i + k + len / 2] = ur - vr; im[i + k + len / 2] = ui - vi;
+        const ncr = cr * wr - ci * wi;
+        ci = cr * wi + ci * wr; cr = ncr;
+      }
+    }
+  }
+  if (inverse) for (let i = 0; i < n; i++) { re[i] /= n; im[i] /= n; }
+}
+
+// ---------------- A: photo variants ----------------
+function makePhotoVariant(srcImg, i) {
+  const c = newCanvas(), g = c.getContext('2d');
+  // deterministic crop / flip / brightness variants of the single real photo
+  const sw = srcImg.naturalWidth, sh = srcImg.naturalHeight;
+  const zoom = 1 + (i % 4) * 0.06;
+  const cw = sw / zoom, ch = sh / zoom;
+  const sx = (i * 13) % Math.max(1, sw - cw), sy = (i * 7) % Math.max(1, sh - ch);
+  g.save();
+  if (i % 2) { g.translate(W, 0); g.scale(-1, 1); }
+  g.drawImage(srcImg, sx, sy, cw, ch, 0, 0, W, H);
+  g.restore();
+  if (i % 3 === 1) { g.fillStyle = 'rgba(255,255,255,0.10)'; g.fillRect(0, 0, W, H); }
+  if (i % 3 === 2) { g.fillStyle = 'rgba(0,0,0,0.12)'; g.fillRect(0, 0, W, H); }
+  return c;
+}
+
+// ---------------- driver ----------------
+function dataUrl(c) { return c.toDataURL('image/png'); }
+
+async function main() {
+  const result = {};
+  const photo = new Image();
+  const photoOk = await new Promise((res) => {
+    photo.onload = () => res(true);
+    photo.onerror = () => res(false);
+    photo.src = window.__photoDataUrl || '';
+  });
+  log('photo_loaded', String(photoOk));
+
+  for (let i = 0; i < 10; i++) {
+    const rnd = mulberry32(1000 + i);
+    result['B' + i] = dataUrl(makeBars(i, rnd));
+    result['C' + i] = dataUrl(makeScreenshot(i, rnd));
+    result['D' + i] = dataUrl(makeCartoon(i, rnd));
+    result['E' + i] = dataUrl(makeSmooth(i, rnd));
+    result['F' + i] = dataUrl(makeSpectral(i, mulberry32(5000 + i), 1.1 + (i % 3) * 0.15));
+    if (photoOk) result['A' + i] = dataUrl(makePhotoVariant(photo, i));
+  }
+  window.__corpus = result;
+  log('images', Object.keys(result).length);
+  log('keys', Object.keys(result).join(','));
+  log('DONE', 'yes');
+}
+main();
+</script>
+</body>
+</html>
+
+

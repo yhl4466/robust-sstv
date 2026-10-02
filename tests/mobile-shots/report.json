@@ -1,0 +1,232 @@
+{
+  "generatedAt": "2026-10-02T13:03:08.354Z",
+  "port": 9342,
+  "devices": [
+    "iphone",
+    "android"
+  ],
+  "measures": [
+    {
+      "device": "iphone",
+      "pages": [
+        {
+          "page": "index.html",
+          "clientWidth": 390,
+          "scrollWidth": 390,
+          "overflowing": [],
+          "jargon": [],
+          "smallTargets": [
+            "<a> \"Robust SSTV\" h=27",
+            "<a> \"试试图片隐藏功能 →\" h=19",
+            "<a> \"阅读技术报告 →\" h=19",
+            "<a> \"CKegel/Web-SSTV\" h=16",
+            "<a> \"samccone/sstv\" h=16",
+            "<a> \"fft.js\" h=16"
+          ]
+        },
+        {
+          "page": "embed-image.html",
+          "clientWidth": 390,
+          "scrollWidth": 390,
+          "overflowing": [],
+          "jargon": [
+            "M1×1",
+            "S1×1",
+            "RS(×2"
+          ],
+          "smallTargets": [
+            "<a> \"Robust SSTV\" h=27",
+            "<a> \"提取端\" h=20"
+          ]
+        },
+        {
+          "page": "extract-image.html",
+          "clientWidth": 390,
+          "scrollWidth": 390,
+          "overflowing": [],
+          "jargon": [
+            "SSTV×1",
+            "RS(×2"
+          ],
+          "smallTargets": [
+            "<a> \"Robust SSTV\" h=27",
+            "<a> \"嵌入端\" h=20"
+          ]
+        },
+        {
+          "page": "tech.html",
+          "clientWidth": 390,
+          "scrollWidth": 390,
+          "overflowing": [],
+          "jargon": [
+            "SSTV×18",
+            "M1×37",
+            "S1×7",
+            "PD120×21",
+            "PD180×17",
+            "B=×5",
+            "Δ×4",
+            "QIM×2",
+            "AFC×1",
+            "交织×31",
+            "傅里叶×2",
+            "频谱×1",
+            "标定头×10",
+            "码字×41",
+            "里德-所罗门×10"
+          ],
+          "smallTargets": [
+            "<a> \"Robust SSTV\" h=27"
+          ]
+        }
+      ]
+    },
+    {
+      "device": "android",
+      "pages": [
+        {
+          "page": "index.html",
+          "clientWidth": 360,
+          "scrollWidth": 360,
+          "overflowing": [],
+          "jargon": [],
+          "smallTargets": [
+            "<a> \"Robust SSTV\" h=27",
+            "<a> \"试试图片隐藏功能 →\" h=19",
+            "<a> \"阅读技术报告 →\" h=19",
+            "<a> \"CKegel/Web-SSTV\" h=16",
+            "<a> \"samccone/sstv\" h=16",
+            "<a> \"fft.js\" h=16"
+          ]
+        },
+        {
+          "page": "embed-image.html",
+          "clientWidth": 360,
+          "scrollWidth": 360,
+          "overflowing": [],
+          "jargon": [
+            "M1×1",
+            "S1×1",
+            "RS(×2"
+          ],
+          "smallTargets": [
+            "<a> \"Robust SSTV\" h=27",
+            "<a> \"提取端\" h=20"
+          ]
+        },
+        {
+          "page": "extract-image.html",
+          "clientWidth": 360,
+          "scrollWidth": 360,
+          "overflowing": [],
+          "jargon": [
+            "SSTV×1",
+            "RS(×2"
+          ],
+          "smallTargets": [
+            "<a> \"Robust SSTV\" h=27",
+            "<a> \"嵌入端\" h=20"
+          ]
+        },
+        {
+          "page": "tech.html",
+          "clientWidth": 360,
+          "scrollWidth": 360,
+          "overflowing": [],
+          "jargon": [
+            "SSTV×18",
+            "M1×37",
+            "S1×7",
+            "PD120×21",
+            "PD180×17",
+            "B=×5",
+            "Δ×4",
+            "QIM×2",
+            "AFC×1",
+            "交织×31",
+            "傅里叶×2",
+            "频谱×1",
+            "标定头×10",
+            "码字×41",
+            "里德-所罗门×10"
+          ],
+          "smallTargets": [
+            "<a> \"Robust SSTV\" h=27"
+          ]
+        }
+      ]
+    }
+  ],
+  "shots": [
+    {
+      "file": "tests/mobile-shots/index-iphone.png",
+      "bytes": 146518,
+      "device": "iphone",
+      "page": "index.html"
+    },
+    {
+      "file": "tests/mobile-shots/embed-image-iphone.png",
+      "bytes": 173822,
+      "device": "iphone",
+      "page": "embed-image.html"
+    },
+    {
+      "file": "tests/mobile-shots/extract-image-iphone.png",
+      "bytes": 125558,
+      "device": "iphone",
+      "page": "extract-image.html"
+    },
+    {
+      "file": "tests/mobile-shots/tech-iphone.png",
+      "bytes": 353449,
+      "device": "iphone",
+      "page": "tech.html"
+    },
+    {
+      "file": "tests/mobile-shots/index-android.png",
+      "bytes": 125912,
+      "device": "android",
+      "page": "index.html"
+    },
+    {
+      "file": "tests/mobile-shots/embed-image-android.png",
+      "bytes": 167371,
+      "device": "android",
+      "page": "embed-image.html"
+    },
+    {
+      "file": "tests/mobile-shots/extract-image-android.png",
+      "bytes": 123764,
+      "device": "android",
+      "page": "extract-image.html"
+    },
+    {
+      "file": "tests/mobile-shots/tech-android.png",
+      "bytes": 329650,
+      "device": "android",
+      "page": "tech.html"
+    },
+    {
+      "file": "tests/mobile-shots/flow-1-image-picked.png",
+      "bytes": 94802,
+      "device": "iphone",
+      "page": "flow"
+    },
+    {
+      "file": "tests/mobile-shots/flow-2-audio-generated.png",
+      "bytes": 94802,
+      "device": "iphone",
+      "page": "flow"
+    },
+    {
+      "file": "tests/mobile-shots/flow-3-decoded.png",
+      "bytes": 94802,
+      "device": "iphone",
+      "page": "flow"
+    }
+  ],
+  "totals": {
+    "passed": 51,
+    "failed": 0
+  }
+}

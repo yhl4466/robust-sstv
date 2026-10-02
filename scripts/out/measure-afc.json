@@ -1,0 +1,85 @@
+{
+  "quality": "standard",
+  "rows": [
+    {
+      "preset": "clean",
+      "afc": true,
+      "psnr": 31.22902169081064,
+      "scale": 0.9999986466198618,
+      "offset": -0.08396364408349655,
+      "headerScale": 1.0064940403200509,
+      "clock": 1.0000013533819698,
+      "source": "sync-calibration"
+    },
+    {
+      "preset": "clean",
+      "afc": false,
+      "psnr": 31.20401371108942,
+      "scale": 1,
+      "offset": 0,
+      "headerScale": 1.0064940403200509,
+      "clock": 1.0000013533819698,
+      "source": "header-only"
+    },
+    {
+      "preset": "mild",
+      "afc": true,
+      "psnr": 27.50038396638224,
+      "scale": 0.9999994823151492,
+      "offset": 4.378426856939313,
+      "headerScale": 0.9962322310967076,
+      "clock": 1.0000005176851188,
+      "source": "sync-calibration"
+    },
+    {
+      "preset": "mild",
+      "afc": false,
+      "psnr": 27.424567374913487,
+      "scale": 1,
+      "offset": 0,
+      "headerScale": 0.9962322310967076,
+      "clock": 1.0000005176851188,
+      "source": "header-only"
+    },
+    {
+      "preset": "moderate",
+      "afc": true,
+      "psnr": 19.683269809045058,
+      "scale": 1.0049995304621897,
+      "offset": 19.7468116241821,
+      "headerScale": 0.9983255722465891,
+      "clock": 0.995025340499522,
+      "source": "sync-calibration"
+    },
+    {
+      "preset": "moderate",
+      "afc": false,
+      "psnr": 19.194818503912913,
+      "scale": 1,
+      "offset": 0,
+      "headerScale": 0.9983255722465891,
+      "clock": 0.995025340499522,
+      "source": "header-only"
+    },
+    {
+      "preset": "severe",
+      "afc": true,
+      "psnr": 15.887714098872385,
+      "scale": 1.0100007060191925,
+      "offset": 51.13304111281741,
+      "headerScale": 1.0064415060574903,
+      "clock": 0.9900983177936487,
+      "source": "sync-calibration"
+    },
+    {
+      "preset": "severe",
+      "afc": false,
+      "psnr": 14.869937627739176,
+      "scale": 1,
+      "offset": 0,
+      "headerScale": 1.0064415060574903,
+      "clock": 0.9900983177936487,
+      "source": "header-only"
+    }
+  ]
+}

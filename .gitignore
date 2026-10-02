@@ -1,0 +1,23 @@
+# 测试产物（可重新生成）
+tests/out/
+tests/downloads/
+tests/svg-fixes/
+tests/paper-figures/
+
+# 脚本产物中的图片（保留 JSON）
+scripts/out/*.png
+
+# 临时文件
+*.tmp
+*.corrupt
+*.bak
+*.log
+
+# 编辑器
+.vscode/
+.idea/
+*.swp
+
+# 系统
+Thumbs.db
+.DS_Store

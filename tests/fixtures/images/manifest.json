@@ -1,0 +1,422 @@
+[
+  {
+    "key": "A0",
+    "cls": "A",
+    "file": "tests/fixtures/images/A0.png",
+    "source": "sample.png variant (same scene)",
+    "note": ""
+  },
+  {
+    "key": "B0",
+    "cls": "B",
+    "file": "tests/fixtures/images/B0.png",
+    "source": "synthetic (pure node)",
+    "note": ""
+  },
+  {
+    "key": "C0",
+    "cls": "C",
+    "file": "tests/fixtures/images/C0.png",
+    "source": "synthetic (pure node)",
+    "note": "bitmap-font text, no antialiasing"
+  },
+  {
+    "key": "D0",
+    "cls": "D",
+    "file": "tests/fixtures/images/D0.png",
+    "source": "synthetic (pure node)",
+    "note": ""
+  },
+  {
+    "key": "E0",
+    "cls": "E",
+    "file": "tests/fixtures/images/E0.png",
+    "source": "synthetic (pure node)",
+    "note": ""
+  },
+  {
+    "key": "F0",
+    "cls": "F",
+    "file": "tests/fixtures/images/F0.png",
+    "source": "synthetic (pure node)",
+    "note": ""
+  },
+  {
+    "key": "A1",
+    "cls": "A",
+    "file": "tests/fixtures/images/A1.png",
+    "source": "sample.png variant (same scene)",
+    "note": ""
+  },
+  {
+    "key": "B1",
+    "cls": "B",
+    "file": "tests/fixtures/images/B1.png",
+    "source": "synthetic (pure node)",
+    "note": ""
+  },
+  {
+    "key": "C1",
+    "cls": "C",
+    "file": "tests/fixtures/images/C1.png",
+    "source": "synthetic (pure node)",
+    "note": "bitmap-font text, no antialiasing"
+  },
+  {
+    "key": "D1",
+    "cls": "D",
+    "file": "tests/fixtures/images/D1.png",
+    "source": "synthetic (pure node)",
+    "note": ""
+  },
+  {
+    "key": "E1",
+    "cls": "E",
+    "file": "tests/fixtures/images/E1.png",
+    "source": "synthetic (pure node)",
+    "note": ""
+  },
+  {
+    "key": "F1",
+    "cls": "F",
+    "file": "tests/fixtures/images/F1.png",
+    "source": "synthetic (pure node)",
+    "note": ""
+  },
+  {
+    "key": "A2",
+    "cls": "A",
+    "file": "tests/fixtures/images/A2.png",
+    "source": "sample.png variant (same scene)",
+    "note": ""
+  },
+  {
+    "key": "B2",
+    "cls": "B",
+    "file": "tests/fixtures/images/B2.png",
+    "source": "synthetic (pure node)",
+    "note": ""
+  },
+  {
+    "key": "C2",
+    "cls": "C",
+    "file": "tests/fixtures/images/C2.png",
+    "source": "synthetic (pure node)",
+    "note": "bitmap-font text, no antialiasing"
+  },
+  {
+    "key": "D2",
+    "cls": "D",
+    "file": "tests/fixtures/images/D2.png",
+    "source": "synthetic (pure node)",
+    "note": ""
+  },
+  {
+    "key": "E2",
+    "cls": "E",
+    "file": "tests/fixtures/images/E2.png",
+    "source": "synthetic (pure node)",
+    "note": ""
+  },
+  {
+    "key": "F2",
+    "cls": "F",
+    "file": "tests/fixtures/images/F2.png",
+    "source": "synthetic (pure node)",
+    "note": ""
+  },
+  {
+    "key": "A3",
+    "cls": "A",
+    "file": "tests/fixtures/images/A3.png",
+    "source": "sample.png variant (same scene)",
+    "note": ""
+  },
+  {
+    "key": "B3",
+    "cls": "B",
+    "file": "tests/fixtures/images/B3.png",
+    "source": "synthetic (pure node)",
+    "note": ""
+  },
+  {
+    "key": "C3",
+    "cls": "C",
+    "file": "tests/fixtures/images/C3.png",
+    "source": "synthetic (pure node)",
+    "note": "bitmap-font text, no antialiasing"
+  },
+  {
+    "key": "D3",
+    "cls": "D",
+    "file": "tests/fixtures/images/D3.png",
+    "source": "synthetic (pure node)",
+    "note": ""
+  },
+  {
+    "key": "E3",
+    "cls": "E",
+    "file": "tests/fixtures/images/E3.png",
+    "source": "synthetic (pure node)",
+    "note": ""
+  },
+  {
+    "key": "F3",
+    "cls": "F",
+    "file": "tests/fixtures/images/F3.png",
+    "source": "synthetic (pure node)",
+    "note": ""
+  },
+  {
+    "key": "A4",
+    "cls": "A",
+    "file": "tests/fixtures/images/A4.png",
+    "source": "sample.png variant (same scene)",
+    "note": ""
+  },
+  {
+    "key": "B4",
+    "cls": "B",
+    "file": "tests/fixtures/images/B4.png",
+    "source": "synthetic (pure node)",
+    "note": ""
+  },
+  {
+    "key": "C4",
+    "cls": "C",
+    "file": "tests/fixtures/images/C4.png",
+    "source": "synthetic (pure node)",
+    "note": "bitmap-font text, no antialiasing"
+  },
+  {
+    "key": "D4",
+    "cls": "D",
+    "file": "tests/fixtures/images/D4.png",
+    "source": "synthetic (pure node)",
+    "note": ""
+  },
+  {
+    "key": "E4",
+    "cls": "E",
+    "file": "tests/fixtures/images/E4.png",
+    "source": "synthetic (pure node)",
+    "note": ""
+  },
+  {
+    "key": "F4",
+    "cls": "F",
+    "file": "tests/fixtures/images/F4.png",
+    "source": "synthetic (pure node)",
+    "note": ""
+  },
+  {
+    "key": "A5",
+    "cls": "A",
+    "file": "tests/fixtures/images/A5.png",
+    "source": "sample.png variant (same scene)",
+    "note": ""
+  },
+  {
+    "key": "B5",
+    "cls": "B",
+    "file": "tests/fixtures/images/B5.png",
+    "source": "synthetic (pure node)",
+    "note": ""
+  },
+  {
+    "key": "C5",
+    "cls": "C",
+    "file": "tests/fixtures/images/C5.png",
+    "source": "synthetic (pure node)",
+    "note": "bitmap-font text, no antialiasing"
+  },
+  {
+    "key": "D5",
+    "cls": "D",
+    "file": "tests/fixtures/images/D5.png",
+    "source": "synthetic (pure node)",
+    "note": ""
+  },
+  {
+    "key": "E5",
+    "cls": "E",
+    "file": "tests/fixtures/images/E5.png",
+    "source": "synthetic (pure node)",
+    "note": ""
+  },
+  {
+    "key": "F5",
+    "cls": "F",
+    "file": "tests/fixtures/images/F5.png",
+    "source": "synthetic (pure node)",
+    "note": ""
+  },
+  {
+    "key": "A6",
+    "cls": "A",
+    "file": "tests/fixtures/images/A6.png",
+    "source": "sample.png variant (same scene)",
+    "note": ""
+  },
+  {
+    "key": "B6",
+    "cls": "B",
+    "file": "tests/fixtures/images/B6.png",
+    "source": "synthetic (pure node)",
+    "note": ""
+  },
+  {
+    "key": "C6",
+    "cls": "C",
+    "file": "tests/fixtures/images/C6.png",
+    "source": "synthetic (pure node)",
+    "note": "bitmap-font text, no antialiasing"
+  },
+  {
+    "key": "D6",
+    "cls": "D",
+    "file": "tests/fixtures/images/D6.png",
+    "source": "synthetic (pure node)",
+    "note": ""
+  },
+  {
+    "key": "E6",
+    "cls": "E",
+    "file": "tests/fixtures/images/E6.png",
+    "source": "synthetic (pure node)",
+    "note": ""
+  },
+  {
+    "key": "F6",
+    "cls": "F",
+    "file": "tests/fixtures/images/F6.png",
+    "source": "synthetic (pure node)",
+    "note": ""
+  },
+  {
+    "key": "A7",
+    "cls": "A",
+    "file": "tests/fixtures/images/A7.png",
+    "source": "sample.png variant (same scene)",
+    "note": ""
+  },
+  {
+    "key": "B7",
+    "cls": "B",
+    "file": "tests/fixtures/images/B7.png",
+    "source": "synthetic (pure node)",
+    "note": ""
+  },
+  {
+    "key": "C7",
+    "cls": "C",
+    "file": "tests/fixtures/images/C7.png",
+    "source": "synthetic (pure node)",
+    "note": "bitmap-font text, no antialiasing"
+  },
+  {
+    "key": "D7",
+    "cls": "D",
+    "file": "tests/fixtures/images/D7.png",
+    "source": "synthetic (pure node)",
+    "note": ""
+  },
+  {
+    "key": "E7",
+    "cls": "E",
+    "file": "tests/fixtures/images/E7.png",
+    "source": "synthetic (pure node)",
+    "note": ""
+  },
+  {
+    "key": "F7",
+    "cls": "F",
+    "file": "tests/fixtures/images/F7.png",
+    "source": "synthetic (pure node)",
+    "note": ""
+  },
+  {
+    "key": "A8",
+    "cls": "A",
+    "file": "tests/fixtures/images/A8.png",
+    "source": "sample.png variant (same scene)",
+    "note": ""
+  },
+  {
+    "key": "B8",
+    "cls": "B",
+    "file": "tests/fixtures/images/B8.png",
+    "source": "synthetic (pure node)",
+    "note": ""
+  },
+  {
+    "key": "C8",
+    "cls": "C",
+    "file": "tests/fixtures/images/C8.png",
+    "source": "synthetic (pure node)",
+    "note": "bitmap-font text, no antialiasing"
+  },
+  {
+    "key": "D8",
+    "cls": "D",
+    "file": "tests/fixtures/images/D8.png",
+    "source": "synthetic (pure node)",
+    "note": ""
+  },
+  {
+    "key": "E8",
+    "cls": "E",
+    "file": "tests/fixtures/images/E8.png",
+    "source": "synthetic (pure node)",
+    "note": ""
+  },
+  {
+    "key": "F8",
+    "cls": "F",
+    "file": "tests/fixtures/images/F8.png",
+    "source": "synthetic (pure node)",
+    "note": ""
+  },
+  {
+    "key": "A9",
+    "cls": "A",
+    "file": "tests/fixtures/images/A9.png",
+    "source": "sample.png variant (same scene)",
+    "note": ""
+  },
+  {
+    "key": "B9",
+    "cls": "B",
+    "file": "tests/fixtures/images/B9.png",
+    "source": "synthetic (pure node)",
+    "note": ""
+  },
+  {
+    "key": "C9",
+    "cls": "C",
+    "file": "tests/fixtures/images/C9.png",
+    "source": "synthetic (pure node)",
+    "note": "bitmap-font text, no antialiasing"
+  },
+  {
+    "key": "D9",
+    "cls": "D",
+    "file": "tests/fixtures/images/D9.png",
+    "source": "synthetic (pure node)",
+    "note": ""
+  },
+  {
+    "key": "E9",
+    "cls": "E",
+    "file": "tests/fixtures/images/E9.png",
+    "source": "synthetic (pure node)",
+    "note": ""
+  },
+  {
+    "key": "F9",
+    "cls": "F",
+    "file": "tests/fixtures/images/F9.png",
+    "source": "synthetic (pure node)",
+    "note": ""
+  }
+]

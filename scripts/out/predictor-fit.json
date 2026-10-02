@@ -1,0 +1,41 @@
+{
+  "target": 0.0026,
+  "chosen": "unreachableFrac + F3_hfRatio + F1_gradX + F4_edgeDensity + H1_noHeadroomFrac",
+  "coefficients": [
+    -2.1071817126299126,
+    0.5520606839524682,
+    0.1925566526895109,
+    -0.23632322391275695,
+    0.0917698818134718,
+    -0.25118833774437815
+  ],
+  "r2": 0.5188758828098381,
+  "within": 0.8166666666666667,
+  "allModels": [
+    {
+      "label": "unreachableFrac + F3_hfRatio + F1_gradX + F4_edgeDensity + H1_noHeadroomFrac",
+      "r2": 0.5188758828098381,
+      "within": 0.8166666666666667
+    },
+    {
+      "label": "unreachableFrac + F3_hfRatio + F1_gradX",
+      "r2": 0.44099897677957345,
+      "within": 0.8333333333333334
+    },
+    {
+      "label": "unreachableFrac + F3_hfRatio",
+      "r2": 0.40967867642048306,
+      "within": 0.8
+    },
+    {
+      "label": "unreachableFrac",
+      "r2": 0.3282853698404279,
+      "within": 0.7833333333333333
+    },
+    {
+      "label": "F3_hfRatio",
+      "r2": 0.03816697131718971,
+      "within": 0.6
+    }
+  ]
+}

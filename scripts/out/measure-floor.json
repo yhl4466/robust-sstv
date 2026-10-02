@@ -1,0 +1,96 @@
+{
+  "mode": "M1",
+  "quality": "standard",
+  "results": [
+    {
+      "label": "synthetic bars",
+      "delta": 8,
+      "K": 1,
+      "layout": "strided",
+      "nBits": 81920,
+      "ber": 0.49364013671875,
+      "imgPsnr": 29.8395231744274,
+      "vsOrig": 29.10611683724128
+    },
+    {
+      "label": "synthetic bars",
+      "delta": 8,
+      "K": 16,
+      "layout": "strided",
+      "nBits": 5120,
+      "ber": 0.49453125,
+      "imgPsnr": 30.001020867500166,
+      "vsOrig": 29.27463393757009
+    },
+    {
+      "label": "synthetic bars",
+      "delta": 16,
+      "K": 1,
+      "layout": "strided",
+      "nBits": 81920,
+      "ber": 0.0994140625,
+      "imgPsnr": 30.504984974961378,
+      "vsOrig": 26.278582435382095
+    },
+    {
+      "label": "synthetic bars",
+      "delta": 16,
+      "K": 16,
+      "layout": "strided",
+      "nBits": 5120,
+      "ber": 0.0287109375,
+      "imgPsnr": 30.279878521401777,
+      "vsOrig": 26.226701399855244
+    },
+    {
+      "label": "real photo",
+      "delta": 8,
+      "K": 1,
+      "layout": "strided",
+      "nBits": 81920,
+      "ber": 0.4914306640625,
+      "imgPsnr": 30.90243464476606,
+      "vsOrig": 30.12037684478949
+    },
+    {
+      "label": "real photo",
+      "delta": 8,
+      "K": 16,
+      "layout": "strided",
+      "nBits": 5120,
+      "ber": 0.488671875,
+      "imgPsnr": 31.006902611048517,
+      "vsOrig": 30.193502395628876
+    },
+    {
+      "label": "real photo",
+      "delta": 16,
+      "K": 1,
+      "layout": "strided",
+      "nBits": 81920,
+      "ber": 0.30792236328125,
+      "imgPsnr": 29.525978133957906,
+      "vsOrig": 27.729717993740284
+    },
+    {
+      "label": "real photo",
+      "delta": 16,
+      "K": 16,
+      "layout": "strided",
+      "nBits": 5120,
+      "ber": 0.193359375,
+      "imgPsnr": 29.57196320306299,
+      "vsOrig": 27.769315896567214
+    }
+  ],
+  "errorFloor": {
+    "synthetic bars": {
+      "sigma": 6.824076007110729,
+      "mean": -0.48348388671875
+    },
+    "real photo": {
+      "sigma": 7.013600122534328,
+      "mean": -0.08487548828125
+    }
+  }
+}

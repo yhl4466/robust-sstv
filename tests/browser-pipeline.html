@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>file:// 浏览器端管线自测</title>
+</head>
+<body>
+<pre id="out">(pending)</pre>
+<canvas id="dec" width="320" height="256"></canvas>
+
+<!-- Same load order as index.html: classic scripts only. -->
+<script src="../js/lib/fft.js"></script>
+<script src="../js/lib/sstv-modes.js"></script>
+<script src="../js/lib/sstv-timeline.js"></script>
+<script src="../js/lib/sstv-synth.js"></script>
+<script src="../js/lib/wav.js"></script>
+<script src="../js/lib/sstv-decode.js"></script>
+<script src="../js/lib/sstv-channel.js"></script>
+<script src="../js/encoder.js"></script>
+<script src="../js/decoder.js"></script>
+<script>
+/* Browser-side end-to-end test, run from file://.
+ * Exercises the SAME code paths index.html uses: data-URL image -> canvas ->
+ * ImageData -> encoder -> WAV bytes -> WAV parse -> decoder -> canvas. */
+const lines = [];
+const errs = [];
+function log(k, v) { lines.push(k + '=' + v); document.getElementById('out').textContent = lines.join('\n'); }
+window.addEventListener('error', e => errs.push('window.onerror: ' + e.message));
+window.addEventListener('unhandledrejection', e => errs.push('unhandled: ' + (e.reason && e.reason.message)));
+
+const SR_EXPECT = 48000;
+const MODE = 'S1';
+
+function psnr(a, b) {
+  let se = 0, n = 0;
+  for (let i = 0; i < a.length; i++) {
+    if (i % 4 === 3) continue;
+    const d = a[i] - b[i]; se += d * d; n++;
+  }
+  const mse = se / n;
+  return mse === 0 ? Infinity : 10 * Math.log10(65025 / mse);
+}
+
+/* Build a source image, then run it through the real data-URL path. */
+function makeSourceDataUrl(w, h) {
+  const c = document.createElement('canvas');
+  c.width = w; c.height = h;
+  const x = c.getContext('2d');
+  const bars = ['#ffffff', '#ffff00', '#00ffff', '#00ff00', '#ff00ff', '#ff0000', '#0000ff', '#000000'];
+  const bw = w / bars.length;
+  for (let i = 0; i < bars.length; i++) { x.fillStyle = bars[i]; x.fillRect(i * bw, 0, bw + 1, h * 0.75); }
+  const g = x.createLinearGradient(0, 0, w, 0);
+  g.addColorStop(0, '#000'); g.addColorStop(1, '#fff');
+  x.fillStyle = g; x.fillRect(0, h * 0.75, w, h * 0.25);
+  // a colour patch so chroma is exercised too
+  x.fillStyle = '#e04010'; x.fillRect(w * 0.1, h * 0.78, w * 0.3, h * 0.15);
+  return c.toDataURL('image/png');
+}
+
+function run() {
+  log('protocol', location.protocol);
+  log('isSecureContext', String(window.isSecureContext));
+
+  const need = ['FFT', 'SSTVModes', 'SSTVTimeline', 'SSTVSynth', 'SSTVWav', 'SSTVDecode', 'SSTVChannel', 'SSTVEncoder', 'SSTVDecoder'];
+  const missing = need.filter(n => !window[n]);
+  log('all_scripts_loaded', missing.length ? 'MISSING:' + missing.join(',') : 'yes');
+
+  const mode = SSTVEncoder.getMode(MODE);
+  log('mode', mode.name);
+  log('expected_duration', SSTVEncoder.estimateDuration(MODE).toFixed(4));
+
+  const img = new Image();
+  img.onerror = () => { log('FATAL', 'source image failed to load'); finish(); };
+  img.onload = async () => {
+    let fitted;
+    try {
+      fitted = SSTVEncoder.fitToMode(img, mode);
+      log('fit_to_mode', fitted.imageData.width + 'x' + fitted.imageData.height);
+    } catch (e) { log('FATAL', 'fitToMode: ' + e.message); return finish(); }
+
+    // canvas readability (would throw SecurityError if tainted)
+    try {
+      const probe = document.createElement('canvas');
+      probe.width = 4; probe.height = 4;
+      const pc = probe.getContext('2d');
+      pc.drawImage(fitted.canvas, 0, 0, 4, 4);
+      pc.getImageData(0, 0, 4, 4);
+      log('canvas_getImageData', 'readable');
+    } catch (e) { log('canvas_getImageData', 'BLOCKED:' + e.name); }
+
+    // --- AC2: encode ---
+    let enc;
+    const t0 = performance.now();
+    try { enc = SSTVEncoder.encode(fitted.imageData, MODE); }
+    catch (e) { log('FATAL', 'encode: ' + e.message); return finish(); }
+    log('encode_ms', (performance.now() - t0).toFixed(1));
+    log('encode_samples', enc.samples.length);
+    log('encode_sample_rate', enc.sampleRate);
+    log('encode_duration', enc.duration.toFixed(4));
+    log('encode_duration_matches_estimate', String(Math.abs(enc.duration - SSTVEncoder.estimateDuration(MODE)) < 0.001));
+
+    // --- AC3: WAV bytes + blob URL ---
+    const wav = SSTVEncoder.toWavBytes(enc.samples, enc.sampleRate);
+    log('wav_bytes', wav.length);
+    const tag = String.fromCharCode(wav[0], wav[1], wav[2], wav[3]) + '/' + String.fromCharCode(wav[8], wav[9], wav[10], wav[11]);
+    log('wav_magic', tag);
+    log('wav_expected_bytes', 44 + enc.samples.length * 2);
+    const url = URL.createObjectURL(new Blob([wav], { type: 'audio/wav' }));
+    log('blob_url', url.startsWith('blob:') ? 'ok' : 'BAD');
+    const audio = document.createElement('audio');
+    audio.src = url;
+    log('audio_src_set', audio.src.startsWith('blob:') ? 'ok' : 'BAD');
+
+    // --- AC4: decode (no rAF waits, so it completes in one task chain) ---
+    const parsed = SSTVDecoder.parseWav(wav.buffer.slice(0));
+    log('wav_parse', parsed.ok ? ('ok ' + parsed.sampleRate + 'Hz ' + parsed.channels + 'ch ' + parsed.bitsPerSample + 'bit') : ('FAIL ' + parsed.message));
+    if (!parsed.ok) return finish();
+
+    const td = performance.now();
+    const r = await SSTVDecoder.decode(parsed.samples, parsed.sampleRate, {
+      quality: 'fast',
+      wantConfidence: true,
+      yieldFn: () => Promise.resolve()
+    });
+    log('decode_ms', (performance.now() - td).toFixed(1));
+    if (!r.ok) { log('decode', 'FAIL stage=' + r.stage + ' ' + r.message); return finish(); }
+    log('decode_mode', r.mode.name);
+    log('decode_vis', r.vis);
+    log('decode_image', r.imageData.width + 'x' + r.imageData.height);
+    log('decode_psnr_vs_source', psnr(r.imageData.data, fitted.imageData.data).toFixed(2));
+    log('decode_payload_bits', r.payload ? r.payload.length : 'n/a');
+    log('decode_warnings', r.warnings.length ? r.warnings.join(' | ') : 'none');
+
+    // render to the visible canvas (@AC4 display path)
+    const dc = document.getElementById('dec');
+    dc.width = r.imageData.width; dc.height = r.imageData.height;
+    dc.getContext('2d').putImageData(new ImageData(r.imageData.data, r.imageData.width, r.imageData.height), 0, 0);
+    const back = dc.getContext('2d').getImageData(0, 0, dc.width, dc.height);
+    let distinct = new Set();
+    for (let i = 0; i < back.data.length; i += 4 * 97) distinct.add(back.data[i] + ',' + back.data[i + 1] + ',' + back.data[i + 2]);
+    log('decoded_canvas_distinct_colours', distinct.size);
+    log('decoded_canvas_nonblank', String(distinct.size > 5));
+
+    // phase-2 seam is live and returns capacity
+    const cap = SSTVChannel.Codec.capacity(enc.timeline);
+    log('extension_capacity_pixels', cap.pixelSlots);
+    log('extension_embedder', SSTVChannel.Codec.activeEmbedder());
+    log('export_offline_render_available', String(typeof OfflineAudioContext !== 'undefined'));
+
+    finish();
+  };
+  img.src = makeSourceDataUrl(400, 300);   // deliberately not the mode's native size
+}
+
+function finish() {
+  log('collected_errors', errs.length ? errs.join(' | ') : 'none');
+  log('DONE', 'yes');
+}
+
+run();
+</script>
+</body>
+</html>
