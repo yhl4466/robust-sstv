@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>一种面向真实退化信道的鲁棒 SSTV 音频解码方法 · 技术报告</title>
+<title>一种面向真实退化信道的抗干扰 SSTV 音频解码方法 · 技术报告</title>
 <meta name="description" content="Robust SSTV 项目技术报告：仿射频率标定、时钟恢复、里德-所罗门纠错与交织、模式表驱动的 PD 族解码，含二十六段真实音频验证与失败根因消融。">
 <link rel="stylesheet" href="css/style.css">
 </head>
@@ -24,14 +24,14 @@
 <!-- NAV:END -->
 
 <main class="paper">
-  <h1 class="title">一种面向真实退化信道的鲁棒 SSTV 音频解码方法</h1>
+  <h1 class="title">一种面向真实退化信道的抗干扰 SSTV 音频解码方法</h1>
   <p class="subtitle">A Robust SSTV Audio Decoding Method for Real-World Degradation Channels</p>
   <p class="authors">Robust SSTV 项目组 · 2026-10</p>
 
 <section class="abstract" id="abstract">
 <h2>0 摘要</h2>
 <p>SSTV（慢扫描电视）以模拟频率调制在窄带语音信道内传送静止图象，其接收质量在真实环境中受多重退化共同限制。本文研究在此类退化信道下尽可能完整地恢复图象的方法，并给出一个可离线运行、无外部依赖的解码实现。方法上采用仿射频率标定与时钟恢复以校正频率轴的整体缩放与平移，采用里德-所罗门码配合码字交织保护数字边带，并以模式表驱动的方式统一描述逐行同步族与 PD 族两类扫描结构。实测结果显示，该实现支持 Martin M1、Scottie S1、PD120 与 PD180 四种模式的解码，PD120 往返峰值信噪比达到 32.46 dB，PD180 达到 32.62 dB；在真实录音上，采样率自 8 kHz 至 44.1 kHz 均可正确解码，三倍硬削波不造成可测损失。已知限制是标定头检测在两重损伤叠加时失败，本文给出其根因的消融证据。</p>
-<p class="keywords"><strong>关键词：</strong>SSTV；鲁棒解码；前向纠错；自动频率控制；模式表驱动</p>
+<p class="keywords"><strong>关键词：</strong>SSTV；抗干扰解码；前向纠错；自动频率控制；模式表驱动</p>
 <h3>Abstract</h3>
 <p class="en">Slow-scan television (SSTV) conveys still images over narrowband voice channels using analogue frequency modulation, and reception quality in the field is limited by several degradations acting together. This work studies image recovery under such degraded channels and presents an offline decoder with no external dependencies. The method applies affine frequency calibration and clock recovery to correct the scale and offset of the frequency axis, protects the digital side channel with a Reed-Solomon code and codeword interleaving, and describes both the line-sync family and the PD family through a single mode-table-driven scan model. Measurements show support for four modes, with round-trip peak signal-to-noise ratios of 32.46 dB for PD120 and 32.62 dB for PD180; real recordings decode correctly at sample rates from 8 kHz to 44.1 kHz, and threefold hard clipping causes no measurable loss. A known limitation is that calibration-header detection fails when two degradations coincide, for which ablation evidence is reported.</p>
 </section>
@@ -44,7 +44,7 @@
 <p>模拟调制在频率轴上承载信息，因此任何使频率测量产生系统偏差的机制都直接转化为灰度误差。实测表明每灰阶对应 3.137 Hz，判决余量在量化索引调制下仅为数个灰阶，故数十赫兹的系统偏差即可造成可见失真。与之相对，纯加性噪声在同等功率下的影响明显较小，这使退化类型的排序与直觉不一致。</p>
 <p>解码还受限于模式结构差异。逐行同步族每一行都携带同步脉冲，可逐行独立锁位；PD 族每两行才有一个同步脉冲，且无逐行 porch，像素时间为 190 µs。两类结构无法共用同一套对齐逻辑，而公开资料中对 PD 族解码细节的描述不足以直接实现。</p>
 <h3>1.3 本文贡献</h3>
-<p>本文的贡献包括四个方面。第一，给出一个可离线运行的鲁棒解码实现，支持四种模式，并对频率轴采用仿射标定。第二，以模式表统一描述两类扫描结构，并给出 PD 族解码在窗长选择与同步沿检测上的定量依据。第三，通过块长扫描与内容依赖性测量，量化鲁棒性与容量之间的权衡关系。第四，以二十六段真实及现实化退化音频给出逐样本解码结果，并给出三段失败样本的根因消融证据。</p>
+<p>本文的贡献包括四个方面。第一，给出一个可离线运行的抗干扰解码实现，支持四种模式，并对频率轴采用仿射标定。第二，以模式表统一描述两类扫描结构，并给出 PD 族解码在窗长选择与同步沿检测上的定量依据。第三，通过块长扫描与内容依赖性测量，量化抗干扰能力与容量之间的权衡关系。第四，以二十六段真实及现实化退化音频给出逐样本解码结果，并给出三段失败样本的根因消融证据。</p>
 <h3>1.4 论文结构</h3>
 <p>第 2 节回顾相关工作并说明本文与已有方法的区别。第 3 节给出系统模型、设计目标与记号。第 4 节描述方法，包括标定、纠错、边带调制与两类扫描模型。第 5 节报告实验设置与全部测量结果。第 6 节讨论权衡关系与失败根因。第 7 节列出已知限制与未来方向，第 8 节总结。</p>
 </section>
@@ -57,7 +57,7 @@
 <h3>2.3 前向纠错与交织</h3>
 <p>里德-所罗门码是符号级纠错码，其面向字节的变体在无线与存储系统中广泛使用，相关编码方案见 RFC 5510 [2]。当错误以连续突发形式出现时，单靠纠错码的效率有限，需配合交织把突发在时间上分散到多个码字内，其代价是引入译码延迟并增加所需的码字数。</p>
 <h3>2.4 量化索引调制</h3>
-<p>量化索引调制通过在量化格点上选择承载索引来嵌入信息，Chen 与 Wornell 给出了其容量与鲁棒性的理论分析 [5]，Cox 等人则系统总结了数字水印与隐写的设计权衡 [4]。本文把该机制用作与模拟主通道共存的寄生边带，其载体为图象域的块均值，因而完全位于模拟调制之外。</p>
+<p>量化索引调制通过在量化格点上选择承载索引来嵌入信息，Chen 与 Wornell 给出了其容量与抗干扰能力的理论分析 [5]，Cox 等人则系统总结了数字水印与隐写的设计权衡 [4]。本文把该机制用作与模拟主通道共存的寄生边带，其载体为图象域的块均值，因而完全位于模拟调制之外。</p>
 <h3>2.5 与本文工作的区别</h3>
 <p>既有工作或聚焦于理想信道下的编码实现，或聚焦于纯数字链路的同步与纠错。本文的差异在于把模拟调制的物理边界作为约束条件，用同一实现同时刻画两类扫描结构，并以真实退化音频而非理想噪声模型作为验证基准，同时给出失败案例的定量根因。</p>
 </section>
@@ -938,9 +938,9 @@
 <caption>表 8 PD 族解码测试结果</caption>
 <thead><tr><th>测试项</th><th>阈值</th><th>实测</th><th>音频时长</th><th>备注</th></tr></thead>
 <tbody>
-<tr><td>PD120 往返（合成细节图）</td><td>> 25</td><td>32.46 dB</td><td>127.11 s</td><td>74771 ms</td></tr>
+<tr><td>PD120 往返（合成细节图）</td><td>> 25</td><td>32.46 dB</td><td>127.11 s</td><td>50949 ms</td></tr>
 <tr><td>PD120 往返（彩色色条图）</td><td>> 25</td><td>28.49 dB</td><td>—</td><td>6/6 色相正确</td></tr>
-<tr><td>PD180 往返（合成细节图）</td><td>> 25</td><td>32.62 dB</td><td>187.43 s</td><td>86249 ms</td></tr>
+<tr><td>PD180 往返（合成细节图）</td><td>> 25</td><td>32.62 dB</td><td>187.43 s</td><td>90022 ms</td></tr>
 <tr><td>Martin M1 往返（对照，确认未回归）</td><td>> 25</td><td>31.95 dB</td><td>—</td><td>—</td></tr>
 <tr><td>表结构断言</td><td>全部通过</td><td>25 项通过 / 0 项失败</td><td>—</td><td>含行对时序、系数和为零、两模式共用路径</td></tr>
 </tbody>
@@ -952,7 +952,7 @@
 </section>
 <section id="s6">
 <h2>6 讨论</h2>
-<h3>6.1 鲁棒性与容量的权衡</h3>
+<h3>6.1 抗干扰能力与容量的权衡</h3>
 <p>块长是可靠性与容量之间的单一控制量。误码率随块长增大而下降，容量则成反比下降，因此在给定码率下存在使有效吞吐最大的中间取值。本文测得该值为 32 像素每比特，此时载荷为 215 字节而误码率已低于纠错预算。继续增大块长会减少可用码字数，进而削弱交织可用的深度，这一点在容量接近单码字时尤为明显。</p>
 <h3>6.2 真实录音与合成退化的差异</h3>
 <p>现实化损伤套件虽以真实录音为源，其参数仍由模型给定，与真实退化存在差距。差异尤其体现在三个方面：真实衰退落的深度与持续时间分布缺乏先验；扬声器与麦克风链路的非线性未被建模；录音取景的随机性仅以两种情形代表。因此本文把真实录音与现实化合成分栏报告，未将二者合并统计。</p>
@@ -984,7 +984,7 @@
 </section>
 <section id="s8">
 <h2>8 结论</h2>
-<p>本文给出一个面向真实退化信道的鲁棒 SSTV 解码实现，支持 Martin M1、Scottie S1、PD120 与 PD180 四种模式。实现以仿射标定校正频率轴，以里德-所罗门码与交织保护数字边带，并以模式表统一描述两类扫描结构。四种模式的往返测试均满足设计目标，PD120 与 PD180 分别达到 32.46 dB 与 32.62 dB，真实录音在 8 kHz 至 44.1 kHz 采样率下均可解码，三倍硬削波不造成可测损失。</p>
+<p>本文给出一个面向真实退化信道的抗干扰 SSTV 解码实现，支持 Martin M1、Scottie S1、PD120 与 PD180 四种模式。实现以仿射标定校正频率轴，以里德-所罗门码与交织保护数字边带，并以模式表统一描述两类扫描结构。四种模式的往返测试均满足设计目标，PD120 与 PD180 分别达到 32.46 dB 与 32.62 dB，真实录音在 8 kHz 至 44.1 kHz 采样率下均可解码，三倍硬削波不造成可测损失。</p>
 <p>测量同时给出若干否定性结论。标定与时钟校正在真实录音上不产生净增益，其交叉点位于 0.02% 至 0.1% 之间；后处理对干净图象造成平均 0.70 dB 的损失，故默认关闭；三段失败样本的根因是标定头参考模式被双重退化破坏，而非判定门限偏紧。这些结论限定了该实现的适用范围，也为后续改进指明了方向。</p>
 </section>
 <section id="s9">

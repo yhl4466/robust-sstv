@@ -31,7 +31,7 @@ const APPLY = process.argv.includes('--apply');
 /** [damaged literal, repaired literal, why] */
 const REPAIRS = [
   ['/* SSTV 图片隐藏 · 阶段一 ?UI wiring',
-   '/* 鲁棒 SSTV 解码 · UI wiring',
+   '/* 抗干扰 SSTV 解码 · UI wiring',
    'comment separator lost; the old brand text is also stale after the rename'],
   ['保持界面响应?\');', '保持界面响应）\');', 'full-width close paren lost'],
   ["(res.cancelled ? '已取消?' : '解码失败（阶段：' + esc(res.stage) + '?br>' + esc(res.message)));",

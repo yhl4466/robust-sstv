@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>鲁棒 SSTV 解码 · 阶段一（纯前端编解码）</title>
+<title>抗干扰 SSTV 解码平台 · 首页</title>
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -153,13 +153,13 @@
 
 <section class="wrap">
   <details class="card ext" id="payloadPanel">
-    <summary>阶段二：抗干扰诊断面板（信道模拟 / RS 纠错 / 交织 / 载荷往返）</summary>
+    <summary>抗干扰诊断面板（信道模拟 / RS 纠错 / 交织 / 载荷往返）</summary>
 
     <div class="ext-panel">
       <p class="hint">
         在当前图片与模式上实时跑一遍<b>完整载荷链路</b>：帧(魔数+长度+CRC32) → RS 编码 → 交织
         → 块均值 QIM 嵌入到绿通道 → SSTV 编码 → <b>信道模拟器</b> → SSTV 解调 → 提取 → 解交织
-        → RS 译码 → CRC 校验。嵌在图象域、提取在像素域，<b>阶段一的编码器/解调器核心未改</b>。
+        → RS 译码 → CRC 校验。嵌在图象域、提取在像素域，<b>编码器与解调器核心未改</b>。
       </p>
 
       <div class="row3">
@@ -217,7 +217,7 @@
 
 <section class="wrap">
   <details class="card ext">
-    <summary>阶段二扩展接口自检（LDPC / 图片隐藏 / 非纯前端模式）</summary>
+    <summary>扩展接口自检（LDPC / 图片隐藏 / 非纯前端模式）</summary>
     <div id="extPanel" class="ext-panel"></div>
     <div class="actions">
       <button id="extRefresh" class="ghost">刷新接口与容量表</button>

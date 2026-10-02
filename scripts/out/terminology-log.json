@@ -1,0 +1,117 @@
+{
+  "appliedAt": "2026-10-02T13:46:02.713Z",
+  "rules": [
+    [
+      "鲁棒性",
+      "抗干扰能力"
+    ],
+    [
+      "鲁棒",
+      "抗干扰"
+    ]
+  ],
+  "files": 9,
+  "total": 27,
+  "log": [
+    {
+      "file": "README.md",
+      "changes": [
+        {
+          "from": "鲁棒",
+          "to": "抗干扰",
+          "count": 3
+        }
+      ]
+    },
+    {
+      "file": "index.html",
+      "changes": [
+        {
+          "from": "鲁棒",
+          "to": "抗干扰",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "file": "embed-image.html",
+      "changes": [
+        {
+          "from": "鲁棒",
+          "to": "抗干扰",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "file": "extract-image.html",
+      "changes": [
+        {
+          "from": "鲁棒",
+          "to": "抗干扰",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "file": "tech.html",
+      "changes": [
+        {
+          "from": "鲁棒性",
+          "to": "抗干扰能力",
+          "count": 3
+        },
+        {
+          "from": "鲁棒",
+          "to": "抗干扰",
+          "count": 5
+        }
+      ]
+    },
+    {
+      "file": "js/app.js",
+      "changes": [
+        {
+          "from": "鲁棒",
+          "to": "抗干扰",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "file": "scripts/gen-tech-html.js",
+      "changes": [
+        {
+          "from": "鲁棒性",
+          "to": "抗干扰能力",
+          "count": 3
+        },
+        {
+          "from": "鲁棒",
+          "to": "抗干扰",
+          "count": 5
+        }
+      ]
+    },
+    {
+      "file": "scripts/rename-project.js",
+      "changes": [
+        {
+          "from": "鲁棒",
+          "to": "抗干扰",
+          "count": 3
+        }
+      ]
+    },
+    {
+      "file": "scripts/patch-appjs.js",
+      "changes": [
+        {
+          "from": "鲁棒",
+          "to": "抗干扰",
+          "count": 1
+        }
+      ]
+    }
+  ]
+}

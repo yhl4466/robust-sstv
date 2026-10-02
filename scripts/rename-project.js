@@ -22,14 +22,14 @@ const EXTRA = [path.join(ROOT, '..', '阶段一技术方案.md')];
 
 /*
  * ORDER MATTERS. The longest phrase is replaced first so that
- * '抗干扰 SSTV 图片隐藏' does not degrade into '抗干扰 鲁棒 SSTV 解码'.
+ * '抗干扰 SSTV 图片隐藏' does not degrade into '抗干扰 抗干扰 SSTV 解码'.
  */
 const RULES = [
   ['sstv-web-hide', 'robust-sstv'],
   ['SSTV web hide', 'Robust SSTV'],
   ['SSTV Web Hide', 'Robust SSTV'],
-  ['抗干扰 SSTV 图片隐藏', '鲁棒 SSTV 解码'],
-  ['SSTV 图片隐藏', '鲁棒 SSTV 解码']
+  ['抗干扰 SSTV 图片隐藏', '抗干扰 SSTV 解码'],
+  ['SSTV 图片隐藏', '抗干扰 SSTV 解码']
 ];
 
 /** Prose and presentation files only - source code is deliberately excluded. */

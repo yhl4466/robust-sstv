@@ -4,7 +4,7 @@
  * Applies degradations to SSTV audio samples. Deterministic: every random draw
  * comes from a seeded PRNG, so any configuration reproduces byte-identically.
  *
- * Degradation order (deliberate, see 阶段二方案):
+ * Degradation order (deliberate; the reason for each position is noted below):
  *
  *   1. multipath          continuous-time propagation: delayed/attenuated copies
  *   2. frequency offset   continuous-time effect: receiver LO / tuning error

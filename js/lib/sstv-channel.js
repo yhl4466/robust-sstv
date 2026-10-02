@@ -62,7 +62,7 @@
    */
   embedders.register('identity', {
     id: 'identity',
-    label: '直通（阶段一，不嵌入）',
+    label: '直通（不嵌入）',
     capacity: function () { return 0; },
     embed: function (samples /*, bits, meta */) {
       return { samples: samples, meta: { embedded: 0, embedder: 'identity' } };

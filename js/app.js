@@ -1,4 +1,4 @@
-/* 鲁棒 SSTV 解码 · UI wiring
+/* 抗干扰 SSTV 解码 · UI wiring
  *
  * Classic script (no modules): every module is already on window by load order.
  * Uses no fetch(), no Worker and no AudioWorklet, because file:// blocks all three.
@@ -297,14 +297,14 @@
   function renderExtensions() {
     var rows = [];
     rows.push('<p class="muted">接口层版本 <code>' + Channel.VERSION + '</code> · 后端模式 <code>' +
-      Channel.Backend.mode + '</code>（<code>remote</code> 为后续阶段预留）</p>');
+      Channel.Backend.mode + '</code>（<code>remote</code> 尚未实现）</p>');
 
     rows.push('<table><thead><tr><th>扩展点</th><th>已注册</th><th>当前生效</th></tr></thead><tbody>');
     rows.push('<tr><td>隐写嵌入：Codec.registerEmbedder</td><td>' +
       Channel.Codec.listEmbedders().map(esc).join('、') + '</td><td>' +
       esc(Channel.Codec.activeEmbedder()) + '</td></tr>');
     rows.push('<tr><td>信道编码 Codec.registerFEC（LDPC 预留）</td><td>' +
-      (Channel.Codec.listFECs().length ? Channel.Codec.listFECs().map(esc).join('、') : '<span class="muted">（阶段二注册）</span>') +
+      (Channel.Codec.listFECs().length ? Channel.Codec.listFECs().map(esc).join('、') : '<span class="muted">（未注册）</span>') +
       '</td><td><span class="muted">—</span></td></tr>');
     rows.push('<tr><td>干扰模型 Channel</td><td>' +
       Object.keys(Channel.Channel).map(esc).join('、') + '</td><td><span class="muted">—</span></td></tr>');
@@ -312,7 +312,8 @@
 
     rows.push('<h3>各模式可嵌入容量估算</h3>');
     rows.push('<p class="hint">按模式结构解析得出的<b>解析估算</b>，不是已实现的隐写信道测量值。' +
-      '阶段一未实现任何嵌入，<code>identity</code> 嵌入器容量为 0</p>');
+      '默认生效的 <code>identity</code> 嵌入器为直通（容量 0），下表为各模式在相应方案下的<b>上限估算</b>；' +
+      '已实现的图片隐藏见 <a href="embed-image.html">图片隐藏 · 嵌入端</a>。</p>');
     rows.push('<table><thead><tr><th>模式</th><th>像素槽位</th><th>亮度QIM 1bit</th><th>亮度QIM 2bit</th>' +
       '<th>色度QIM 1bit</th><th>消隐段FSK符号</th><th>同步段FSK符号</th></tr></thead><tbody>');
     Encoder.modes().forEach(function (m) {
