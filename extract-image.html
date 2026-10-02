@@ -34,7 +34,7 @@
     <div class="row">
       <div class="field">
         <label for="wavInput">① 选择 WAV 文件</label>
-        <input type="file" id="wavInput" accept="audio/wav,audio/*,.wav">
+        <input type="file" id="wavInput" accept=".wav,.m4a,.mp3,.ogg,.oga,.opus,.aac,.flac,.webm,.mp4,.m4v,.mov,.3gp,audio/*,video/*">
       </div>
       <div class="field">
         <label for="blockSelect">载体块长 B</label>
@@ -83,6 +83,8 @@
 <script src="js/fec-rs.js"></script>
 <script src="js/interleaver.js"></script>
 <script src="js/payload-pipeline.js"></script>
+<script src="js/lib/audio-input.js"></script>
+<script src="js/decoder.js"></script>
 <script src="js/image-codec.js"></script>
 <script src="js/image-extract.js"></script>
 <script>
@@ -92,6 +94,12 @@
   var state = { samples: null, sampleRate: 48000, publicImage: null, secretImage: null, busy: false };
 
   function setStatus(kind, html) { var el = $('status'); el.className = 'status' + (kind ? ' ' + kind : ''); el.innerHTML = html || ''; }
+  /** setStatus writes innerHTML, and the file name in it comes from the user - escape it. */
+  function esc(s) {
+    return String(s).replace(/[&<>"]/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+    });
+  }
   function metricRow(k, v) { return '<div class="metric"><span class="k">' + k + '</span><span class="v">' + v + '</span></div>'; }
   function showProgress(f, label) {
     $('progressWrap').hidden = false;
@@ -129,20 +137,24 @@
   $('wavInput').addEventListener('change', async function (e) {
     var f = e.target.files && e.target.files[0];
     if (!f) return;
-    try {
-      var buf = await f.arrayBuffer();
-      // SSTVWav.parse THROWS on a bad file and returns the samples directly on success -
-      // it does not return an {ok} object, so the try/catch below is the error path.
-      var parsed = window.SSTVWav.parse(buf);
-      if (!parsed || !parsed.samples || !parsed.samples.length) {
-        setStatus('err', 'WAV 解析失败：没有可用的采样数据'); return;
-      }
-      state.samples = parsed.samples; state.sampleRate = parsed.sampleRate;
-      setStatus('', '已载入 <b>' + f.name + '</b> · ' + parsed.sampleRate + ' Hz · ' +
-        parsed.channels + ' 声道 · ' + parsed.duration.toFixed(2) + ' s');
-      $('extractBtn').disabled = false;
-      window.__extractWavLoaded = true;
-    } catch (err) { setStatus('err', 'WAV 解析失败：' + (err && err.message ? err.message : err)); }
+    /*
+     * Same format-aware layer as the main page: WAV is parsed natively (native sample rate), and
+     * anything else - a phone screen recording in M4A/MP4/WebM - goes through the browser decoder
+     * instead of being refused. Note the payload is read from quantised block means in the IMAGE
+     * domain, so it is more sensitive to resampling than the public image is; see the phase
+     * report for what actually survives a transcode.
+     */
+    var parsed = await window.SSTVDecoder.parseAudio(f, {
+      onStage: function (text) { setStatus('', esc(text) + '…'); }
+    });
+    if (!parsed.ok) { setStatus('err', parsed.message); return; }
+    state.samples = parsed.samples; state.sampleRate = parsed.sampleRate;
+    setStatus('', '已载入 <b>' + esc(f.name) + '</b> · ' + parsed.sampleRate + ' Hz · ' +
+      parsed.channels + ' 声道 · ' + parsed.duration.toFixed(2) + ' s · ' + esc(parsed.format) +
+      (parsed.transcoded ? '（已转码）' : '（原生采样率）') +
+      (parsed.warning ? '<br><span class="warn">⚠ ' + esc(parsed.warning) + '</span>' : ''));
+    $('extractBtn').disabled = false;
+    window.__extractWavLoaded = true;
   });
 
   $('extractBtn').addEventListener('click', async function () {

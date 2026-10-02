@@ -20,4 +20,5 @@ scripts/out/*.png
 
 # 系统
 Thumbs.db
-.DS_Store
+.DS_Storetests/fixtures/fmt_*.m4a 
+tests/fixtures/fmt_toobig.m4a 

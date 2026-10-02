@@ -194,12 +194,18 @@
     dec.fileUrl = URL.createObjectURL(file);
     $('decAudio').src = dec.fileUrl;
 
-    Decoder.readFileBuffer(file).then(function (buf) {
-      var parsed = Decoder.parseWav(buf);
+    /*
+     * Format-aware load. WAV is parsed natively (unchanged path); anything else is decoded by
+     * the browser. The status line reports which route was taken and which sample rate was
+     * actually produced, because for the fallback that rate belongs to the decoder, not the file.
+     */
+    Decoder.parseAudio(file, {
+      onStage: function (text) { setStatus($('decStatus'), '', esc(text) + '…'); }
+    }).then(function (parsed) {
       if (!parsed.ok) {
         dec.samples = null;
         $('decodeBtn').disabled = true;
-        setStatus($('decStatus'), 'err', 'WAV 解析失败：' + esc(parsed.message));
+        setStatus($('decStatus'), 'err', esc(parsed.message));
         return;
       }
       dec.samples = parsed.samples;
@@ -209,7 +215,9 @@
       setStatus($('decStatus'), '',
         '已载入 <b>' + esc(file.name) + '</b> · ' + fmtBytes(file.size) + '<br>' +
         parsed.sampleRate + ' Hz · ' + parsed.channels + ' 声道 · ' + parsed.bitsPerSample + '-bit ' +
-        parsed.format + ' · 时长 ' + fmtDuration(parsed.duration));
+        esc(parsed.format) + (parsed.transcoded ? '（已转码）' : '（原生采样率）') +
+        ' · 时长 ' + fmtDuration(parsed.duration) +
+        (parsed.warning ? '<br><span class="warn">⚠ ' + esc(parsed.warning) + '</span>' : ''));
     }).catch(function (err) {
       setStatus($('decStatus'), 'err', '读取文件失败：' + esc(err.message));
     });

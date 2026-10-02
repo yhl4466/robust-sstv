@@ -1,13 +1,17 @@
 /*
  * Minimal, dependency-free WAV (RIFF/WAVE) reader and writer.
  *
- * Why not use AudioContext.decodeAudioData()?
+ * Why not use AudioContext.decodeAudioData() for WAV?
  *   decodeAudioData() RESAMPLES the audio to the AudioContext's sample rate.
  *   SSTV decoding needs the file's NATIVE sample rate and samples, because the
  *   whole demodulation is timed in seconds against that rate. Real SSTV
  *   recordings are commonly 8000, 11025 or 48000 Hz; resampling them to the
- *   device rate would silently corrupt every timing calculation. It also
- *   rejects some formats outright. So we parse the container ourselves.
+ *   device rate would silently corrupt every timing calculation. So we parse the
+ *   WAV container ourselves, and this stays the only path for RIFF/WAVE files.
+ *
+ *   That reasoning is about WAV, not about every format. A file this parser
+ *   cannot read at all - a phone screen recording in M4A/MP4/WebM - is handed to
+ *   decodeAudioData instead of being refused; see js/lib/audio-input.js.
  *
  * Supported on read: PCM 8/16/24/32-bit int, 32-bit IEEE float, WAVE_FORMAT_EXTENSIBLE,
  *                    mono or multi-channel (mixed down to mono), extra/unknown chunks.

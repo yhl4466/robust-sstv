@@ -129,6 +129,7 @@
 | [阶段十四](docs/reports/阶段十四报告.md) | 术语统一（改用「抗干扰」表述）+ README 精简重写 |
 | [阶段十五](docs/reports/阶段十五报告.md) | 清理过期标题 + 统一四页标题风格 |
 | [阶段十六](docs/reports/阶段十六报告.md) | 清理 UI 层过期文案（面板自检 + 阶段标签） |
+| [阶段十七](docs/reports/阶段十七报告.md) | 音频格式兼容层（WAV 之外的 M4A/MP4/WebM/MP3/OGG） |
 
 ### 开源协议
 

@@ -111,8 +111,11 @@
     <h2><span class="step">2</span>解码音频 · 把声音变回图片</h2>
 
     <div class="field">
-      <label for="wavInput">① 选择音频文件（WAV）</label>
-      <input type="file" id="wavInput" accept=".wav,audio/wav,audio/*">
+      <label for="wavInput">① 选择音频文件</label>
+      <!-- Video containers are deliberate: a phone screen recording is usually video/mp4 or
+           video/webm carrying an AAC/Opus audio track, so an audio/* filter would grey out
+           exactly the file this is meant to accept. -->
+      <input type="file" id="wavInput" accept=".wav,.m4a,.mp3,.ogg,.oga,.opus,.aac,.flac,.webm,.mp4,.m4v,.mov,.3gp,audio/*,video/*">
       <p class="hint">按文件原生采样率解调（录音常见 8 kHz / 11025 Hz / 48 kHz），不做重采样。</p>
     </div>
 
@@ -252,6 +255,7 @@
 <script src="js/interleaver.js"></script>
 <script src="js/payload-pipeline.js"></script>
 <script src="js/encoder.js"></script>
+<script src="js/lib/audio-input.js"></script>
 <script src="js/decoder.js"></script>
 <script src="js/app.js"></script>
 </body>
