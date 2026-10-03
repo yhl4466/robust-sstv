@@ -1,0 +1,76 @@
+{
+  "generatedAt": "2026-10-03T05:32:03.451Z",
+  "audio": "tests/diag-timing/phigros-48k-mono.wav",
+  "selfControl": false,
+  "sampleRate": 48000,
+  "nominalLineSamples": 20554.56,
+  "detector": {
+    "scheme": "quadrature envelope",
+    "decimMs": 0.25,
+    "tones": [
+      1200,
+      1500,
+      1900,
+      2300
+    ],
+    "k": 1.4
+  },
+  "pulseCount": 548,
+  "intervalStats": {
+    "n": 545,
+    "median": 428.0790261889536,
+    "mad": 0.4388573884304492,
+    "mean": 399.99665066232916,
+    "sd": 129.93407531455375,
+    "min": 4.139487301319605,
+    "max": 1529.0088414865895
+  },
+  "pulseWidthMs": {
+    "n": 548,
+    "median": 7.75,
+    "mad": 1,
+    "mean": 7.678832116788321,
+    "sd": 1.4148421106585012,
+    "min": 4,
+    "max": 17
+  },
+  "fit": {
+    "skip": -578421.8172894213,
+    "rate": 20552.963404931317,
+    "r2": 0.999999999873961,
+    "residualSd": 12.270780308035391,
+    "n": 135
+  },
+  "driftPerLineSamples": -1.5965950686841097,
+  "driftPerLinePercent": -0.007767595456599945,
+  "driftOver256Lines": -408.7283375831321,
+  "inlierRate": 0.24635036496350365,
+  "longestRun": {
+    "from": 321,
+    "length": 14
+  },
+  "decoderClockScale": 0.9785190428889937,
+  "decoderImpliedLine": 20113.028378204395,
+  "firstPulses": [
+    16329,
+    36893,
+    57572,
+    78127,
+    98636,
+    119225,
+    139722,
+    160328,
+    180859,
+    201428,
+    222006,
+    240140,
+    242493,
+    263084,
+    283593,
+    304210,
+    324739,
+    345185,
+    365721,
+    386410
+  ]
+}

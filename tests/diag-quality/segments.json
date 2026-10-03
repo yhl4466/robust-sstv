@@ -1,0 +1,78 @@
+{
+  "generatedAt": "2026-10-03T08:12:19.165Z",
+  "durationS": 162.496,
+  "nominalLineMs": 428.22,
+  "rawPulses": 386,
+  "segments": [
+    {
+      "seg": 1,
+      "startS": 2.652101148349837,
+      "endS": 46.75464294775579,
+      "raw": 111,
+      "gridInliers": 90,
+      "meanIntervalMs": 485.9290129653227,
+      "madMs": 0.6422381236781121,
+      "completeness": "碎片",
+      "rmsRel": 0.9591379144380523,
+      "leader1Hz": 11.71875,
+      "leader2Hz": 11.71875,
+      "breakHz": 11.71875,
+      "hasHeader": false
+    },
+    {
+      "seg": 2,
+      "startS": 48.284886972900445,
+      "endS": 82.7466379484383,
+      "raw": 85,
+      "gridInliers": 75,
+      "meanIntervalMs": 451.33825111588317,
+      "madMs": 0.5901324063799507,
+      "completeness": "碎片",
+      "rmsRel": 0.867523324045308,
+      "leader1Hz": 1075.315888488704,
+      "leader2Hz": 949.6535129631957,
+      "breakHz": 1089.3979963463007,
+      "hasHeader": false
+    },
+    {
+      "seg": 3,
+      "startS": 83.60719850329293,
+      "endS": 158.1106416335465,
+      "raw": 185,
+      "gridInliers": 111,
+      "meanIntervalMs": 502.1547509422937,
+      "madMs": 0.6398956773949749,
+      "completeness": "碎片",
+      "rmsRel": 0.9551632025205035,
+      "leader1Hz": 903.5145238588262,
+      "leader2Hz": 783.5867055915527,
+      "breakHz": 948.7427022583541,
+      "hasHeader": false
+    },
+    {
+      "seg": 4,
+      "startS": 159.63962183646822,
+      "endS": 161.56417083575982,
+      "raw": 5,
+      "gridInliers": 4,
+      "meanIntervalMs": 428.1780820877354,
+      "madMs": 0.033258848134209984,
+      "completeness": "碎片",
+      "rmsRel": 0.7768401815607962,
+      "leader1Hz": 1074.538282431378,
+      "leader2Hz": 949.6865070334616,
+      "breakHz": 1089.2830154481915,
+      "hasHeader": false
+    }
+  ],
+  "noGridPulses": 106,
+  "decoder": {
+    "imageStartS": 48.886,
+    "row0S": 49.20308333333333,
+    "rowLastS": 158.39272916666667,
+    "clockScale": 1.0012255188143167
+  },
+  "hostSegment": 2,
+  "bestSegment": 3,
+  "verdict": "【情况 (b)】选中段不完整 → 锁定有问题 ✗"
+}

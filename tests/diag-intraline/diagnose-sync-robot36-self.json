@@ -1,0 +1,45 @@
+{
+  "generatedAt": "2026-10-03T06:17:43.386Z",
+  "audio": "tests/diag-intraline/audit-self-s1.wav",
+  "selfControl": true,
+  "sampleRate": 48000,
+  "nominalLineSamples": 20554.56,
+  "robot36": {
+    "accepted": 0,
+    "rejected": {
+      "tooShort": 0,
+      "tooLong": 0,
+      "freq": 0
+    },
+    "byClass": {
+      "5": 0,
+      "9": 0,
+      "20": 0
+    },
+    "width9ms": null,
+    "freq9ms": null,
+    "interval": null,
+    "thresholds": {
+      "syncLow": -1.5625,
+      "syncHigh": -1.375,
+      "tol": 0.125
+    }
+  },
+  "envelope": {
+    "count": 257,
+    "interval": {
+      "n": 256,
+      "median": 428.26897503637156,
+      "mad": 0.007584874103486072,
+      "mean": 430.0556109145243,
+      "min": 427.0011546236383,
+      "max": 898.0115881528109
+    }
+  },
+  "decoderLock": {
+    "rows": 256,
+    "distMedian": null,
+    "distMax": null,
+    "rowsWithinEighthLine": 0
+  }
+}

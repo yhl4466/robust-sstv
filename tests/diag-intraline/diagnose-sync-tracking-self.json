@@ -1,0 +1,76 @@
+{
+  "generatedAt": "2026-10-03T05:31:34.795Z",
+  "audio": "tests/diag-intraline/audit-self-s1.wav",
+  "selfControl": true,
+  "sampleRate": 48000,
+  "nominalLineSamples": 20554.56,
+  "detector": {
+    "scheme": "quadrature envelope",
+    "decimMs": 0.25,
+    "tones": [
+      1200,
+      1500,
+      1900,
+      2300
+    ],
+    "k": 1.4
+  },
+  "pulseCount": 257,
+  "intervalStats": {
+    "n": 256,
+    "median": 428.2689750363691,
+    "mad": 0.007584874105873496,
+    "mean": 430.055610914524,
+    "sd": 29.307841433033538,
+    "min": 427.00115462363954,
+    "max": 898.0115881528109
+  },
+  "pulseWidthMs": {
+    "n": 257,
+    "median": 8.5,
+    "mad": 0.25,
+    "mean": 8.566147859922179,
+    "sd": 0.18052545851614069,
+    "min": 8.25,
+    "max": 8.75
+  },
+  "fit": {
+    "skip": 37175.13354858925,
+    "rate": 20554.57933984019,
+    "r2": 0.999999999917678,
+    "residualSd": 14.018465278080543,
+    "n": 212
+  },
+  "driftPerLineSamples": 0.019339840189786628,
+  "driftPerLinePercent": 0.0000940902660518475,
+  "driftOver256Lines": 4.950999088585377,
+  "inlierRate": 0.8249027237354085,
+  "longestRun": {
+    "from": 1,
+    "length": 28
+  },
+  "decoderClockScale": 0.9999998643800343,
+  "decoderImpliedLine": 20554.55721239128,
+  "firstPulses": [
+    14621,
+    57726,
+    78283,
+    98839,
+    119370,
+    139926,
+    160483,
+    181073,
+    201631,
+    222188,
+    242745,
+    263274,
+    283830,
+    304387,
+    324917,
+    345474,
+    366031,
+    386621,
+    407178,
+    427735
+  ]
+}

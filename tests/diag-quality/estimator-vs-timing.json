@@ -1,0 +1,66 @@
+{
+  "generatedAt": "2026-10-03T12:45:57.667Z",
+  "calibration": {
+    "scale": 0.989805941752063,
+    "offsetHz": 19.282069115219883,
+    "source": "sync-rejected-header-fallback"
+  },
+  "reference": {
+    "ratio": 0.7952,
+    "x1": 0.548,
+    "y1": 0.15
+  },
+  "variants": [
+    {
+      "name": "A 生产",
+      "rowCorr": 0.6125838022211223,
+      "metrics": {
+        "sdGR": 90.73114836155942,
+        "sdL": 64.52709164525282,
+        "ratio": 1.4060938754278165,
+        "x1": 0.8212167318860457,
+        "y1": 0.5353713588443547
+      },
+      "file": "tests/diag-quality/estim-A-production.png"
+    },
+    {
+      "name": "B 鉴频 1.0ms",
+      "rowCorr": 0.46899352713560055,
+      "metrics": {
+        "sdGR": 98.50732873114464,
+        "sdL": 60.00680673743058,
+        "ratio": 1.641602579557004,
+        "x1": 0.5805399704810388,
+        "y1": 0.38795760524578593
+      },
+      "file": "tests/diag-quality/estim-B-discriminator.png"
+    },
+    {
+      "name": "C 鉴频 0.4ms",
+      "rowCorr": 0.09590152056654189,
+      "metrics": {
+        "sdGR": 152.81940844308994,
+        "sdL": 65.71251092059879,
+        "ratio": 2.325575545693931,
+        "x1": 0.11376722277371162,
+        "y1": 0.08089222294593437
+      },
+      "file": "tests/diag-quality/estim-C-discriminator-fast.png"
+    },
+    {
+      "name": "D FFT+平滑",
+      "rowCorr": 0.5017183746372763,
+      "metrics": {
+        "sdGR": 72.90853038202123,
+        "sdL": 28.997468541308574,
+        "ratio": 2.5143067326087034,
+        "x1": 0.7140733465080162,
+        "y1": 0.5447073029063665
+      },
+      "file": "tests/diag-quality/estim-D-smoothed.png"
+    }
+  ],
+  "best": "B 鉴频 1.0ms",
+  "distA": 1.2694819661582168,
+  "distBest": 1.1169001552838287
+}

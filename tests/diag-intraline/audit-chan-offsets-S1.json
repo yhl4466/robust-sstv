@@ -1,0 +1,131 @@
+{
+  "generatedAt": "2026-10-03T04:25:53.118Z",
+  "mode": "S1",
+  "structure": "scottie",
+  "sampleRate": 48000,
+  "encoderOrder": "Gscan,Bscan,SYNC,Rscan",
+  "scanOrder": [
+    "G",
+    "B",
+    "R"
+  ],
+  "chanSync": 2,
+  "trueFirstLineStarts": [
+    {
+      "chan": "G",
+      "start": 44184,
+      "samples": 6636
+    },
+    {
+      "chan": "B",
+      "start": 50892,
+      "samples": 6636
+    },
+    {
+      "chan": "R",
+      "start": 58032,
+      "samples": 6636
+    }
+  ],
+  "firstSync": 14400,
+  "decodedOk": true,
+  "channelMeans": [
+    {
+      "chan": "G",
+      "truth": 129.4875,
+      "decoded": 129.33509521484376
+    },
+    {
+      "chan": "B",
+      "truth": 3.984375,
+      "decoded": 3.961474609375
+    },
+    {
+      "chan": "R",
+      "truth": 255,
+      "decoded": 253.785986328125
+    }
+  ],
+  "correlation": [
+    {
+      "decoded": "G",
+      "vs": [
+        {
+          "chan": "G",
+          "r": 0.9959
+        },
+        {
+          "chan": "B",
+          "r": -0.1123
+        },
+        {
+          "chan": "R",
+          "r": 0
+        }
+      ]
+    },
+    {
+      "decoded": "B",
+      "vs": [
+        {
+          "chan": "G",
+          "r": -0.1143
+        },
+        {
+          "chan": "B",
+          "r": 0.9801
+        },
+        {
+          "chan": "R",
+          "r": 0
+        }
+      ]
+    },
+    {
+      "decoded": "R",
+      "vs": [
+        {
+          "chan": "G",
+          "r": 0.0056
+        },
+        {
+          "chan": "B",
+          "r": 0.0071
+        },
+        {
+          "chan": "R",
+          "r": 0
+        }
+      ]
+    }
+  ],
+  "spikes": [
+    {
+      "c": "G",
+      "at": 159,
+      "truth": 160,
+      "delta": -1,
+      "measurable": true,
+      "prominence": 40.8,
+      "sd": 75.18841017849962
+    },
+    {
+      "c": "B",
+      "at": 81,
+      "truth": 80,
+      "delta": 1,
+      "measurable": true,
+      "prominence": 61.8,
+      "sd": 30.06799797333146
+    },
+    {
+      "c": "R",
+      "at": null,
+      "truth": 240,
+      "delta": null,
+      "measurable": false,
+      "sd": 3.7890317529434974
+    }
+  ],
+  "verdict": "【补偿恰好成立】各通道读到正确的槽，可测位移 ≤ 2 像素 —— 布局不是根因"
+}

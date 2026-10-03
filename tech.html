@@ -117,7 +117,7 @@
 <tr><td><code>PD180</code></td><td>PD 180</td><td>96</td><td>640×496</td><td>YUV</td><td>PD 族（每两行一个同步）</td><td>751.68 ms</td><td>285.0 µs</td><td>8</td><td>187.43 s</td></tr>
 </tbody>
 </table>
-<p class="table-note">注：行时对逐行同步族为单行时长，对 PD 族为行对时长。PD 族的像素时间为 190 µs（PD120）与 285 µs（PD180），故其音频需 16 kHz 以上采样；逐行同步族的像素时间为 457.6 µs。总时长含 VIS 头与 100 ms 尾部余量。</p>
+<p class="table-note">注：行时对逐行同步族为单行时长，对 PD 族为行对时长。PD 族的像素时间为 190 µs（PD120）与 285 µs（PD180），故其音频需 16 kHz 以上采样；逐行同步族的像素时间 Martin M1 为 457.6 µs、Scottie S1 为 432.0 µs。总时长含 VIS 头与 100 ms 尾部余量。</p>
 </div></p>
 </section>
 <section id="s4">
@@ -509,7 +509,7 @@
 <text x="300" y="86" font-size="11" text-anchor="middle" fill="#7f1d1d">每行都以 1200 Hz 同步脉冲开始</text>
 <text x="300" y="146" font-size="12" text-anchor="middle" fill="#374151">行时 146.4 ms（M1），256 行</text>
 <text x="300" y="170" font-size="12" text-anchor="middle" fill="#374151">可对每一行独立锁位，失锁不传播</text>
-<text x="300" y="194" font-size="12" text-anchor="middle" fill="#6b7280">可用同步点数 256，像素时间 457.6 µs</text>
+<text x="300" y="194" font-size="12" text-anchor="middle" fill="#6b7280">可用同步点数 256，像素时间 457.6 µs（M1；S1 为 432.0 µs）</text>
 <text x="40" y="240" font-size="14" font-weight="600" fill="#1f2937">(b) PD 族：每两行一个同步脉冲（PD120 / PD180）</text>
 <line x1="40" y1="330" x2="846" y2="330" stroke="#333" stroke-width="1.4"/>
 <rect x="40" y="306" width="34" height="24" fill="#dc2626"/>
@@ -811,7 +811,7 @@
 <tr><td><strong>affine + clock (default)</strong></td><td>23/26</td><td></td><td></td><td></td><td></td><td></td><td>19.60</td><td>21.11 dB</td><td></td></tr>
 </tbody>
 </table>
-<p class="table-note">注：上半部分为默认标定配置（仿射标定加时钟恢复）的逐段结果，下半部分为六种配置的汇总。三段失败样本全部终止于标定头搜索阶段。PSNR 仅在带参考图的样本上可得，其余以 σ_HF 表征。数据来自 scripts/out/eval-real-decode.json。</p>
+<p class="table-note">注：上半部分为默认标定配置（仿射标定加时钟恢复）的逐段结果，下半部分为六种配置的汇总。三段失败样本全部终止于标定头搜索阶段。PSNR 仅在带参考图的样本上可得，其余以 σ_HF 表征。行周期由逐行同步位置的逐脉冲裁决给出（最近 4 个间隔的均值，标称一致性与标准差双重门，取自 Robot36 的 Decoder.processSyncPulse），并以 1.25 行周期的自由运行回退应对同步漏检；该机制将一段真实 Scottie S1 录音的相邻行相关从 0.1962 提升到 0.5703（行周期拟合误差由 −2.15% 收窄到 −0.14%）。此前的全局最小二乘与其两种稳健替代（Theil–Sen、相邻间隔中位数）均因污染累积而失败，原因在于全局拟合让污染累积、而逐脉冲裁决将其拒绝。已知边界：标称一致性门为固定 1 ms，采样率失配超过约 0.23% 时会连合法速率一并否决。标定尺度 a 原仅取自 256 个逐行同步位置的直线拟合，缺少质量门；在一段真实录音上该拟合残差达 20822 采样（约一个行周期），其参数仍被整幅采用，而标定头拟合（前导音测得 1899.91 Hz，误差 0.005%）此前仅作诊断字段输出。现已加入质量门：残差超过行周期 5%（约 1028 采样）即拒绝同步拟合，回退到标定头拟合，两者皆不可用时退化为不缩放、只保留前导锚定偏置；合成语料（残差 4.9 采样）仍走同步标定。数据来自 scripts/out/eval-real-decode.json。</p>
 </div>
 <figure class="figure" id="fig12">
 <svg viewBox="-14 -14 1228 428" width="1228" height="428" role="img" xmlns="http://www.w3.org/2000/svg" font-family="system-ui,-apple-system,Segoe UI,sans-serif">
@@ -938,9 +938,9 @@
 <caption>表 8 PD 族解码测试结果</caption>
 <thead><tr><th>测试项</th><th>阈值</th><th>实测</th><th>音频时长</th><th>备注</th></tr></thead>
 <tbody>
-<tr><td>PD120 往返（合成细节图）</td><td>> 25</td><td>32.46 dB</td><td>127.11 s</td><td>50949 ms</td></tr>
+<tr><td>PD120 往返（合成细节图）</td><td>> 25</td><td>32.46 dB</td><td>127.11 s</td><td>40282 ms</td></tr>
 <tr><td>PD120 往返（彩色色条图）</td><td>> 25</td><td>28.49 dB</td><td>—</td><td>6/6 色相正确</td></tr>
-<tr><td>PD180 往返（合成细节图）</td><td>> 25</td><td>32.62 dB</td><td>187.43 s</td><td>90022 ms</td></tr>
+<tr><td>PD180 往返（合成细节图）</td><td>> 25</td><td>32.62 dB</td><td>187.43 s</td><td>40797 ms</td></tr>
 <tr><td>Martin M1 往返（对照，确认未回归）</td><td>> 25</td><td>31.95 dB</td><td>—</td><td>—</td></tr>
 <tr><td>表结构断言</td><td>全部通过</td><td>25 项通过 / 0 项失败</td><td>—</td><td>含行对时序、系数和为零、两模式共用路径</td></tr>
 </tbody>

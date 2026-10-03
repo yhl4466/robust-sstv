@@ -199,7 +199,7 @@ ${[0, 1, 2].map((i) => {
 <text x="300" y="86" font-size="11" text-anchor="middle" fill="#7f1d1d">每行都以 1200 Hz 同步脉冲开始</text>
 <text x="300" y="146" font-size="12" text-anchor="middle" fill="#374151">行时 146.4 ms（M1），256 行</text>
 <text x="300" y="170" font-size="12" text-anchor="middle" fill="#374151">可对每一行独立锁位，失锁不传播</text>
-<text x="300" y="194" font-size="12" text-anchor="middle" fill="#6b7280">可用同步点数 256，像素时间 457.6 µs</text>
+<text x="300" y="194" font-size="12" text-anchor="middle" fill="#6b7280">可用同步点数 256，像素时间 457.6 µs（M1；S1 为 432.0 µs）</text>
 <text x="40" y="240" font-size="14" font-weight="600" fill="#1f2937">(b) PD 族：每两行一个同步脉冲（PD120 / PD180）</text>
 <line x1="40" y1="330" x2="846" y2="330" stroke="#333" stroke-width="1.4"/>
 <rect x="40" y="306" width="34" height="24" fill="#dc2626"/>

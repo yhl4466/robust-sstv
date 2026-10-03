@@ -61,6 +61,15 @@
   var SYNC_DETECT_HZ = 1350;   // above this = not a 1200 Hz sync pulse
   var HEADER_TOLERANCE = 50;   // Hz
 
+  /*
+   * OPT-IN DIAGNOSTIC SINK. When decode() is called with `opts.auditLineRefs` set to an array, the
+   * per-line sync reference the demodulator actually locked onto is appended to it. It is null by
+   * default, so the normal path allocates nothing and behaves exactly as before - the audit needs
+   * the real numbers rather than a re-derivation of them, and reading the arithmetic is how the
+   * previous rounds went wrong.
+   */
+  var auditRefsOut = null;
+
   // Quality tiers (see the sweep in 阶段一技术方案.md section 5.3)
   var QUALITY = {
     fast: { mult: 8, label: '快速' },
@@ -76,6 +85,41 @@
   }
 
   /** Estimator with cached windows and reusable scratch, sized per window length. */
+  /*
+   * Image-band search window for the per-pixel frequency estimate.
+   *
+   * 1500-2300 Hz are NOMINAL levels, but the estimator works on the RAW frequency axis, and the
+   * calibration maps raw -> nominal as calF(f) = (f - b) / a. Inverting it (raw = a * nominal + b)
+   * puts the window where the content actually sits, so a recording with a frequency offset does
+   * not get its upper band clipped. This reuses the calibration that is already fitted and passed
+   * into the scan functions - no new dependency.
+   *
+   * The margin is deliberately wider than one FFT bin. The per-pixel window is only ~1 ms, so at
+   * the 128-point floor a bin spans 375 Hz; a tighter margin (50 Hz was considered) would clip the
+   * very peak it is meant to preserve.
+   */
+  var IMAGE_BAND_MARGIN_HZ = 200;
+  function imageBandRaw(calA, calB) {
+    var a = calA || 1;
+    var b = calB || 0;
+    return [a * 1500 + b - IMAGE_BAND_MARGIN_HZ, a * 2300 + b + IMAGE_BAND_MARGIN_HZ];
+  }
+
+  /*
+   * NOTE (phase 27): a robust line-period estimator (Theil-Sen, then the median of consecutive
+   * intervals) was implemented and tried in place of the least-squares fits below, and BOTH made the
+   * real recording worse, measured:
+   *     least squares        -> 20113 samples/line, adjacent-row correlation 0.1962
+   *     Theil-Sen            -> 19127,                      correlation 0.0676
+   *     median of intervals  -> 19395,                      correlation 0.1041
+   *     truth (independent fine-grained detector)          -> 20553
+   * The estimator was not the constraint: an independent detector measures this recording's
+   * consecutive-interval median at 428.079 ms (20548 samples), so whatever series the fits consume
+   * behaves like a ~404 ms median - the sync positions are contaminated at the SOURCE. No aggregation
+   * rule recovers a period that is not in the series, so the fits were reverted to least squares and
+   * the next step is to instrument that series. See docs/reports/阶段二十七报告.md.
+   */
+
   function Estimator(sampleRate, mult) {
     this.sampleRate = sampleRate;
     this.mult = mult;
@@ -112,9 +156,14 @@
    * @param {Float32Array} [confOut] single-element array; filled with confidence in dB
    * @param {number} [capOverride] raise the FFT size cap for precision-critical,
    *        non-hot-path measurements (calibration); the hot paths keep the small cap
+   * @param {number} [bandLo] optional lower frequency bound (Hz) for the peak search. The pixel
+   *        estimator needs it: a ~1 ms window over the whole spectrum locks onto whatever is
+   *        loudest, which on a real recording is often out-of-band content far above 2300 Hz, and
+   *        calcLum then clamps every such pixel to white.
+   * @param {number} [bandHi] optional upper frequency bound (Hz)
    * @returns {number} frequency in Hz
    */
-  Estimator.prototype.peak = function (samples, offset, len, confOut, capOverride) {
+  Estimator.prototype.peak = function (samples, offset, len, confOut, capOverride, bandLo, bandHi) {
     if (len < 4) return 0;
     var cap = capOverride || 4096;
     var size = nextPow2(len * this.mult);
@@ -136,8 +185,21 @@
     e.fft.realTransform(out, input);
 
     var mags = e.mags;
-    var best = -1, bx = 0;
-    for (var k = 0; k < mags.length; k++) {
+    /*
+     * Optional restricted search. Without bandLo/bandHi this is byte-for-byte the old behaviour
+     * (whole spectrum, whole-spectrum competing tone), which is what every non-pixel caller -
+     * VIS bits, the 1900 Hz header, the 1200 Hz sync - still relies on.
+     */
+    var kLo = 0, kHi = mags.length - 1;
+    if (bandLo != null && bandHi != null) {
+      kLo = Math.max(0, Math.ceil(bandLo * size / this.sampleRate));
+      kHi = Math.min(mags.length - 1, Math.floor(bandHi * size / this.sampleRate));
+      // A band narrower than a few bins cannot be searched meaningfully; widening beats returning a
+      // value that bin quantisation invented.
+      if (kHi - kLo < 3) { kLo = 0; kHi = mags.length - 1; }
+    }
+    var best = -1, bx = kLo;
+    for (var k = kLo; k <= kHi; k++) {
       var re = out[2 * k], im = out[2 * k + 1];
       var m = Math.sqrt(re * re + im * im);
       if (m > best) { best = m; bx = k; }
@@ -152,9 +214,11 @@
     var peakIdx = den === 0 ? 0 : (y3 - y1) / den + bx;
 
     if (confOut) {
-      // Best magnitude at least 3 bins away from the peak, as a noise-floor proxy.
+      // Best magnitude at least 3 bins away from the peak, as a competing-tone proxy. Scoped to
+      // the searched band so that a restricted search reports in-band separation rather than being
+      // flattered by quiet bins outside it.
       var guard = 3, floor = 1e-12;
-      for (var q = 0; q < mags.length; q++) {
+      for (var q = kLo; q <= kHi; q++) {
         if (q >= bx - guard && q <= bx + guard) continue;
         if (mags[q] > floor) floor = mags[q];
       }
@@ -185,6 +249,7 @@
     var started = Date.now();
     var timings = {};
     var warnings = [];
+    auditRefsOut = opts.auditLineRefs || null;   // default null: nothing is recorded
 
     if (!samples || !samples.length) {
       return { ok: false, stage: 'input', message: 'No audio samples to decode.' };
@@ -294,9 +359,43 @@
         calib.a = hdr.a; calib.b = hdr.b;
         calib.source = 'two-point-header';
       } else if (cal) {
-        calib.a = cal.scale;
-        calib.b = cal.offsetHz;
-        calib.source = 'sync-calibration';
+        /*
+         * QUALITY GATE on the sync-derived scale (phase 38).
+         *
+         * Until now `a` had exactly one source: the straight-line fit through the per-line sync
+         * positions. On the phigros capture that fit fails completely - residualRmsSamples came out at
+         * 20822 samples, i.e. about ONE LINE PERIOD, which cannot be a fit to anything (the decoder's
+         * own per-line references fit a line to 119.7 samples, so the damage is done inside the
+         * calibration pre-pass, not by the references). The resulting scale of 1.0973 was still
+         * applied to the whole image, while the header fit - two 1900 Hz leader tones plus VIS bits,
+         * i.e. the part of the signal actually designed for frequency calibration - measured the
+         * leader at 1899.91 Hz, an error of 0.005%, and was written to the report as a diagnostic
+         * field only, never used.
+         *
+         * So: accept the sync fit only when its residual is small compared with a line period.
+         * Otherwise fall back to the header fit, and if that is unusable too, to no scaling at all
+         * with just the leader-anchored offset. Every branch records why it was taken.
+         */
+        var nomLine = Modes.lineTime(mode) * sampleRate;
+        var resRms = cal.residualRmsSamples;
+        var gateSamples = nomLine * 0.05;
+        var syncFitGood = isFinite(resRms) && resRms <= gateSamples;
+        calib.syncFitResidualRms = resRms;
+        calib.syncFitGateSamples = gateSamples;
+        calib.syncFitAccepted = syncFitGood;
+        if (syncFitGood) {
+          calib.a = cal.scale;
+          calib.b = cal.offsetHz;
+          calib.source = 'sync-calibration';
+        } else if (hdr.a && isFinite(hdr.a) && hdr.a > 0) {
+          calib.a = hdr.a;
+          calib.b = hdr.b;
+          calib.source = 'sync-rejected-header-fallback';
+        } else {
+          calib.a = 1;
+          calib.b = (hdr.leaderFreq && isFinite(hdr.leaderFreq)) ? (hdr.leaderFreq - 1900) : 0;
+          calib.source = 'sync-rejected-leader-offset';
+        }
       } else {
         calib.source = 'header-only';
       }
@@ -307,7 +406,12 @@
         calib.syncResidualMax = cal.residualMaxSamples;
         calib.mislockedLines = cal.mislockedLines;
       }
-      if (!clockRecovery) calib.clockScale = 1;
+      /*
+       * Disabling clock recovery forces the scale the SCAN will use to 1. A marker is kept so the
+       * reporting step below cannot silently undo this and make the option look broken to every
+       * caller reading calibration.clockScale.
+       */
+      if (!clockRecovery) { calib.clockScale = 1; calib.clockRecoveryApplied = false; }
       timings.calibration = Date.now() - tCal;
 
       // ---------------- stage 3: image data ----------------
@@ -329,11 +433,23 @@
         );
       }
       timings.image = Date.now() - tImg;
+
+      /*
+       * Phase-49 adaptive post-processing. Runs LAST, on the composed raster, and is gated on the
+       * raster's own flat-region noise. With postprocess:'off' nothing is measured and nothing is
+       * allocated, so the historical path is untouched; with 'auto' (the default) the measurement
+       * costs one pass over 320x256 and the filter only runs when the gate passes.
+       */
+      var composed = pdResult ? pdResult.imageData : composeImageData(decoded, mode);
+      var ppMode = opts.postprocess === undefined ? 'auto'
+        : (opts.postprocess === true ? 'auto' : opts.postprocess);
+      var pp = applyAdaptivePostprocess(composed, ppMode);
+      var imageData = pp.imageData;
       timings.total = Date.now() - started;
 
       return {
         ok: true,
-        imageData: pdResult ? pdResult.imageData : composeImageData(decoded, mode),
+        imageData: imageData,
         mode: { id: mode.id, name: mode.name },
         vis: visValue,
         confidence: decoded.confidence,
@@ -347,6 +463,9 @@
           clockScale: calib.clockScale,
           observations: calib.observations,
           syncResidualRms: calib.syncResidualRms,
+          /* Phase 38 quality gate: was the sync-derived scale accepted, and against what limit? */
+          syncFitGateSamples: calib.syncFitGateSamples,
+          syncFitAccepted: calib.syncFitAccepted,
           syncResidualMax: calib.syncResidualMax,
           mislockedLines: calib.mislockedLines,
           headerScale: hdr.a,
@@ -354,7 +473,16 @@
           leaderFreqHz: hdr.leaderFreq,
           // diagnostics: where the body was taken to start, and where PD actually locked
           imageStart: visEnd,
-          pdBlockStarts: pdResult ? Array.prototype.slice.call(pdResult.blockStarts, 0, 8) : null
+          pdBlockStarts: pdResult ? Array.prototype.slice.call(pdResult.blockStarts, 0, 8) : null,
+          /*
+           * Phase 29 adjudication diagnostics. This block is a WHITELIST, so anything set on `calib`
+           * inside the demodulator is invisible here until it is listed - which is why the first
+           * version of these two fields measured as undefined even though the logic was running.
+           */
+          lineWindow: calib.lineWindow || null,
+          freeRunTotal: calib.freeRunTotal == null ? null : calib.freeRunTotal,
+          /* Phase 49: what the adaptive denoiser measured and decided. */
+          postprocess: pp.info
         },
         warnings: warnings,
         timings: timings
@@ -497,6 +625,8 @@
    * within a few milliseconds, then refine by direct correlation.
    */
   var syncTables = {};
+  /* Phase-48 gate counters; null unless a caller asks for them (see _internal.alignStats). */
+  var alignStats = null;
   function syncTable(n, sampleRate) {
     var key = n + '@' + sampleRate;
     var t = syncTables[key];
@@ -541,19 +671,210 @@
    *        sync threshold is applied to the corrected frequency rather than the raw one
    * @returns {number|null} sync-pulse start (or end, if startOfSync is false).
    */
+  /*
+   * How far around the prediction to look for the sync tone.
+   *
+   * The caller's prediction is not trustworthy on a real recording: phase 45 measured the per-line
+   * reference missing the true sync by 7149 samples (149 ms, about base+chanTime - exactly the rewind
+   * quantity) with a 92-sample row-to-row jitter, while on our own synthetic audio the same code lands
+   * within 200 samples with 18 samples of jitter. The prediction error to absorb is therefore at least
+   * one and a half thousand pixels' worth, and if the search cannot reach the true pulse the lock ends
+   * up wherever the prediction happened to be.
+   */
+  /**
+   * Same matched-filter search as refineSync, but also reports HOW WELL it matched.
+   *
+   * The score is the 1200 Hz matched-filter energy at the best offset divided by the window's total
+   * energy, so it is a bounded, amplitude-independent confidence: a window filled with a pure sync
+   * tone scores about n/2, image content or noise scores far less. That is exactly the quantity
+   * alignSync needs - the phase-46 attempt scored candidates by their dominant FREQUENCY instead, and
+   * since est.peak occasionally reports below the sync band in low-SNR regions, "lowest wins" then
+   * had to pick that noise, which broke the synthetic round trip (M1 31.23 -> 17.27 dB).
+   *
+   * @returns {{pos:number, score:number}}
+   */
+  function refineSyncScore(samples, sampleRate, mode, coarseStart, startOfSync) {
+    var n = Math.round(mode.syncPulse * sampleRate);
+    var fallback = startOfSync ? coarseStart : coarseStart + n;
+    if (n < 8 || n > samples.length) return { pos: fallback, score: 0 };
+
+    var range = Math.round(0.006 * sampleRate);
+    var lo = Math.max(0, coarseStart - range);
+    var hi = Math.min(samples.length - n, coarseStart + range);
+    if (hi < lo) return { pos: fallback, score: 0 };
+
+    var tab = syncTable(n, sampleRate);
+    var cos = tab.cos, sin = tab.sin;
+    var bestMag = -1, bestT = lo, bestEnergy = 1e-9;
+    for (var t = lo; t <= hi; t++) {
+      var re = 0, im = 0, en = 0;
+      for (var i = 0; i < n; i++) {
+        var s = samples[t + i];
+        re += s * cos[i];
+        im += s * sin[i];
+        en += s * s;
+      }
+      var mag = re * re + im * im;
+      if (mag > bestMag) { bestMag = mag; bestT = t; bestEnergy = en; }
+    }
+    var score = bestEnergy > 1e-9 ? bestMag / bestEnergy : 0;
+    return { pos: startOfSync ? bestT : bestT + n, score: score };
+  }
+
   function alignSync(est, samples, sampleRate, mode, alignStart, startOfSync, cal) {
     var syncWindow = Math.round(mode.syncPulse * 1.4 * sampleRate);
     var alignStop = samples.length - syncWindow;
     if (alignStop <= alignStart) return null;
     var f = cal || function (x) { return x; };
 
-    // Coarse fix: advance until the dominant tone is no longer the 1200 Hz sync.
-    var cs = alignStart;
-    for (; cs < alignStop; cs++) {
-      if (f(est.peak(samples, cs, syncWindow)) > SYNC_DETECT_HZ) break;
+    /*
+     * Counters for the phase-48 gate. Deliberately plain module state rather than anything threaded
+     * through the call: the point is to observe which branch production actually takes, and the
+     * tests that use it read the numbers after a normal decode() call.
+     */
+    if (alignStats) {
+      alignStats.calls++;
+      if (startOfSync) alignStats.startOfSyncCalls++; else alignStats.endOfSyncCalls++;
     }
-    var endSync = cs + Math.floor(syncWindow / 2);
-    var coarse = startOfSync ? endSync - Math.round(mode.syncPulse * sampleRate) : endSync;
+    /*
+     * Coarse fix: advance until the dominant tone is no longer the 1200 Hz sync.
+     *
+     * KNOWN DEFECT (phase 45/46): this walk never verifies that it STARTED inside a pulse. If
+     * `alignStart` already sits in image content (above SYNC_DETECT_HZ) the loop breaks on its first
+     * iteration, so the "lock" is just the prediction. On the phigros recording that shows up as a
+     * constant ~7149-sample miss (149 ms, about base+chanTime) with ~92 samples of row-to-row jitter -
+     * which is exactly the blur and the row-coherent colour banding in that decode. On our own
+     * synthetic audio the prediction is accurate, so the round-trip tests never saw it.
+     *
+     * REPLACEMENT ATTEMPTED AND REVERTED: scanning +/-0.4 line around the prediction and keeping the
+     * candidate with the LOWEST dominant frequency fixed the real recording spectacularly - the miss
+     * fell from 7155 to 248 samples, the chroma ratio from 1.4061 to 0.8101 against a reference of
+     * 0.7952, and the render became a recognisable figure - but it broke the synthetic round trip
+     * (M1 31.23 -> 17.27 dB, S1 30.50 -> 15.28 dB) and ran ten times slower. The reason is the
+     * selection rule: est.peak occasionally reports below SYNC_DETECT_HZ in low-SNR or band-edge
+     * regions, and "lowest wins" then must pick that noise.
+     *
+     * The next attempt should score candidates by refineSync's own match confidence and pick the BEST,
+     * rather than by the raw frequency, and should keep the scan narrow (the prediction is usually
+     * close - only the real recording's degraded stretches are far off).
+     */
+    /*
+     * Coarse fix: advance until the dominant tone is no longer the 1200 Hz sync.
+     *
+     * KNOWN DEFECT, TWO FIX ATTEMPTS BOTH REVERTED (phases 45-47).
+     *
+     * The walk never verifies that it STARTED inside a pulse. If alignStart already sits in image
+     * content (above SYNC_DETECT_HZ) the loop breaks on its first iteration, so the "lock" is just the
+     * prediction. On the phigros recording that is a constant ~7149-sample miss (149 ms, about
+     * base+chanTime - the rewind quantity) with ~92 samples of row-to-row jitter: exactly the blur and
+     * the row-coherent colour banding. On synthetic audio the prediction is accurate, so round trips
+     * never saw it.
+     *
+     * Attempt 1 (phase 46) scanned +/-0.4 line and kept the candidate whose dominant tone was LOWEST.
+     * On the real recording it was spectacular - miss 7155 -> 248 samples, chroma ratio 1.4061 ->
+     * 0.8101 against a reference of 0.7952, and a recognisable figure - but M1 fell 31.23 -> 17.27 dB
+     * and S1 30.50 -> 15.28 dB, because est.peak occasionally reports below the sync band in low-SNR
+     * regions and "lowest wins" then must pick that noise.
+     *
+     * Attempt 2 (phase 47) ranked candidates by the 1200 Hz matched-filter confidence from
+     * refineSyncScore instead, which noise cannot win, scanning +/-0.4 line in 6 ms steps. It still
+     * broke the synthetic round trip - M1 31.23 -> 20.13 dB, S1 30.50 -> 29.60 dB - and was still 5-7x
+     * slower, so the ranking rule is not the only problem and the scan itself disturbs the case where
+     * the prediction was already correct.
+     *
+     * A future attempt should not replace the walk wholesale: it should keep the walk when it starts
+     * inside a pulse, and only fall back to a search when the walk's first sample is already above the
+     * sync band - i.e. decide on the START condition, not on a global best-of-scan. Also note that
+     * roundtrip.js reports "ALL CHECKS PASSED" at M1 20.13 dB, so its thresholds are far looser than
+     * the recorded baselines (31.23 / 30.50) and must not be used as the acceptance criterion.
+     */
+    var cs = alignStart;
+    /*
+     * PHASE 48 - PLAN A, "STRICTLY ADDITIVE".
+     *
+     * The one question the walk must answer before it runs is whether it STARTED inside a pulse.
+     * The answer is a single tone measurement at `alignStart`, taken with exactly the same window
+     * the walk's own first iteration uses. When the answer is yes, the loop below is the code that
+     * has always been here, unchanged and reached the same way - so the synthetic round trip cannot
+     * be affected in the way the two reverted attempts affected it. Those replaced the walk
+     * wholesale with a global best-of-scan and cost 11-14 dB of M1 PSNR; this decides on the START
+     * condition instead, and the branch it guards is the only place the new code can run.
+     *
+     * Measured control flow (tests/probe-align-gate.js):
+     *   synthetic S1 round trip : 514 alignSync calls, 512 started in a pulse, 2 did not
+     *   phigros real recording  : 514 alignSync calls, 507 started in a pulse, 7 did not
+     * So the synthetic path is not "never" on the new branch - it is 2 calls out of 514, on lines
+     * where the prediction had genuinely drifted off the pulse and where the walk had nothing to
+     * walk on either. That is the intended repair, not a disturbance, and it shows up as M1
+     * 31.23 -> 31.26 dB rather than as a loss.
+     *
+     * The real-recording case is the one the walk cannot handle at all: the rewind leaves
+     * `alignStart` about 149 ms (7149 samples) past the pulse, the walk breaks on its first
+     * iteration and returns the prediction unchanged, which is the constant miss plus ~92-sample
+     * row jitter that blurred and colour-banded the phigros decode.
+     */
+    var startInSync = f(est.peak(samples, alignStart, syncWindow)) <= SYNC_DETECT_HZ;
+    if (alignStats) { if (startInSync) alignStats.startInSync++; else alignStats.startInImage++; }
+
+    var syncLen = Math.round(mode.syncPulse * sampleRate);
+    var endSync, coarse;
+    if (startInSync) {
+      for (; cs < alignStop; cs++) {
+        if (f(est.peak(samples, cs, syncWindow)) > SYNC_DETECT_HZ) break;
+      }
+      endSync = cs + Math.floor(syncWindow / 2);
+      coarse = startOfSync ? endSync - syncLen : endSync;
+      if (coarse < 0) coarse = 0;
+      return refineSync(samples, sampleRate, mode, coarse, startOfSync);
+    }
+
+    /*
+     * Fallback search, reached only when the walk had nothing to walk on.
+     *
+     * Candidates are sync-pulse STARTS scanned over +/-0.4 of a line period in 6 ms steps - 6 ms is
+     * `refineSync`'s own capture range, so the refine stage at the end can still pull the winner onto
+     * the pulse even if the best candidate is one step off. The window is wide enough for the S1
+     * rewind (0.4 * 428 ms = 171 ms around a miss of 149 ms) and still narrow enough to exclude the
+     * neighbouring lines' pulses, which is what keeps a wrong-but-loud candidate from winning.
+     *
+     * Each candidate is scored by the 1200 Hz matched-filter confidence from refineSyncScore, i.e.
+     * matched energy over window energy. This is the ranking rule phase 46 lacked: a bounded,
+     * amplitude-independent confidence that noise cannot win, as opposed to "lowest dominant
+     * frequency wins", which in low-SNR stretches had to pick noise and cost 14 dB.
+     *
+     * The candidate space is converted through the SAME arithmetic as the walk above (window end
+     * minus half a window, then minus the pulse length) so that the fallback returns a position in
+     * the identical coordinate system - the two branches cannot disagree about what a lock is.
+     */
+    var searchRange = Math.round(0.4 * Modes.lineTime(mode) * sampleRate);
+    if (alignStats) alignStats.searchElected++;
+    var searchStep = Math.max(1, Math.round(0.006 * sampleRate));
+    var loC = Math.max(0, alignStart - searchRange);
+    var hiC = Math.min(alignStop - 1, alignStart + searchRange);
+    var bestScore = -1, bestCs = alignStart;
+    for (var cand = loC; cand <= hiC; cand += searchStep) {
+      // Window centred on the CANDIDATE pulse: a window anchored at the candidate covers its whole
+      // pulse, so an in-pulse candidate is actually seen as one. (The walk's window is a 1.4x pulse
+      // window starting at its own cursor; reproducing that geometry here would push the window past
+      // a candidate that is still perfectly good.)
+      var probe = Math.min(cand, Math.max(0, samples.length - syncWindow));
+      var candEnd = probe + Math.floor(syncWindow / 2);
+      var candCoarse = startOfSync ? candEnd - syncLen : candEnd;
+      if (candCoarse < 0) candCoarse = 0;
+      var r = refineSyncScore(samples, sampleRate, mode, candCoarse, startOfSync);
+      if (r.score > bestScore) { bestScore = r.score; bestCs = cand; }
+    }
+    if (bestScore < 0) {
+      // Degenerate window: keep the prediction rather than invent a position.
+      endSync = alignStart + Math.floor(syncWindow / 2);
+    } else {
+      endSync = Math.min(bestCs, Math.max(0, samples.length - syncWindow)) +
+                Math.floor(syncWindow / 2);
+      if (alignStats) {
+        if (bestCs === alignStart) alignStats.bestFromSearch0++; else alignStats.bestFromSearch++;
+      }
+    }
+    coarse = startOfSync ? endSync - syncLen : endSync;
     if (coarse < 0) coarse = 0;
 
     return refineSync(samples, sampleRate, mode, coarse, startOfSync);
@@ -642,6 +963,22 @@
 
     if (obs.length < 8) return null;
 
+    /*
+     * LEAST SQUARES, deliberately restored.
+     *
+     * A robust estimator was tried here and at the noteSync() site (phase 27) and made things WORSE
+     * on the real recording, measured:
+     *     least squares        -> 20113 samples/line, adjacent-row correlation 0.1962
+     *     Theil-Sen            -> 19127,                      correlation 0.0676
+     *     median of intervals  -> 19395,                      correlation 0.1041
+     *     truth (independent fine-grained detector)          -> 20553
+     * The reason is not the estimator but the INPUT: an independent detector measures this
+     * recording's consecutive-interval median at 428.079 ms (20548 samples), yet whatever series
+     * these fits consume behaves like a ~404 ms median, i.e. the sync positions fed in are
+     * contaminated at the source. No aggregation rule can recover a period from a series that does
+     * not contain it, so the next step is to instrument that series, not to change the fit.
+     * See docs/reports/阶段二十七报告.md.
+     */
     var n = obs.length, sx = 0, sy = 0, sxx = 0, sxy = 0;
     for (var i = 0; i < n; i++) { sx += i; sy += obs[i]; sxx += i * i; sxy += i * obs[i]; }
     var den = n * sxx - sx * sx;
@@ -764,27 +1101,81 @@
      * detection needed. Measured benefit: this is what makes the 0.5%/1% presets
      * decodable at all.
      */
-    var syncObs = [];
     var measuredLineSamples = nominalLineSamples;
     var syncFreqSum = 0, syncFreqN = 0;
 
+    /*
+     * Per-pulse line-rate adjudication, ported from Robot36's Decoder.processSyncPulse().
+     *
+     * The three global estimators tried earlier (least squares, Theil-Sen, median of intervals) all
+     * failed on the real recording, and the reason is structural rather than statistical: a global fit
+     * lets contamination ACCUMULATE, whereas upstream REJECTS it per pulse. Its rule is:
+     *   - keep the last LINE_WINDOW (=4) consecutive sync intervals;
+     *   - mean = their average, stdDev = their standard deviation;
+     *   - if stdDev > LINE_TOLERANCE_SAMPLES (1 ms) the whole update is DISCARDED and the previous
+     *     rate is kept;
+     *   - likewise if |mean - nominal line period| > 1 ms.
+     * A spurious sync therefore corrupts at most one window and is then thrown away, instead of
+     * dragging a fitted slope. Phase 26 measured the real recording's interval MAD at 0.4389 ms, well
+     * inside the 1 ms gate, so this adjudicator accepts its good pulses and rejects the music-borne
+     * ones - which is exactly what the global fit could not do.
+     */
+    var LINE_WINDOW = 4;
+    var LINE_TOLERANCE_SAMPLES = Math.round(0.001 * sampleRate);
+    var lineIntervals = [];
+    var lastSyncPos = null;
+    var lineWindow = { n: 0, mean: null, sd: null, applied: false, updates: 0, rejected: 0 };
+    var freeRunLines = 0;
+    var freeRunTotal = 0;
+    /*
+     * Upper bound on consecutive free-running lines. Upstream re-locks from its header path and does
+     * not need a cap, but we decode a whole file in one pass: without one, a recording that ends in
+     * pure noise would be "decoded" into a full frame of fabricated content instead of stopping.
+     */
+    var MAX_FREE_RUN_LINES = 32;
+
     function noteSync(pos) {
-      syncObs.push({ i: syncObs.length, p: pos });
-      if (syncObs.length >= 8) {
-        var n = syncObs.length, sx = 0, sy = 0, sxx = 0, sxy = 0;
-        for (var q = 0; q < n; q++) {
-          var o = syncObs[q];
-          sx += o.i; sy += o.p; sxx += o.i * o.i; sxy += o.i * o.p;
-        }
-        var den = n * sxx - sx * sx;
-        if (den) {
-          var slope = (n * sxy - sx * sy) / den;
-          // sanity-gate: a wild slope means a mis-lock, not a clock error
-          if (slope > nominalLineSamples * 0.9 && slope < nominalLineSamples * 1.1) {
-            measuredLineSamples = slope;
-          }
+      if (lastSyncPos != null) {
+        lineIntervals.push(pos - lastSyncPos);
+        if (lineIntervals.length > LINE_WINDOW) lineIntervals.shift();
+        var wn = lineIntervals.length;
+        var wm = 0;
+        for (var wi = 0; wi < wn; wi++) wm += lineIntervals[wi];
+        wm /= wn;
+        var wv = 0;
+        for (var wj = 0; wj < wn; wj++) { var wd = lineIntervals[wj] - wm; wv += wd * wd; }
+        var wsd = Math.sqrt(wv / wn);
+        /*
+         * The gates apply only once the window is full. Before that the mean of whatever is present is
+         * used, with no gate - upstream behaves the same way while its history is filling.
+         */
+        var gated = wn >= LINE_WINDOW;
+        /*
+         * The nominal-agreement gate applies ALWAYS, including while the window is filling; only the
+         * std-dev gate waits for a full window.
+         *
+         * Measured on the real recording: the very first intervals are already contaminated (window
+         * mean 20085 against a nominal 20555), and because the gates used to be skipped until the
+         * window filled, that bad value was written unconditionally - after which every gated update
+         * failed the nominal check (469 samples out, i.e. 10x the 48-sample tolerance) and was
+         * discarded, leaving the contaminated rate in place for the entire frame. The gate ends up
+         * protecting the very value it was meant to reject. Diagnostics showed it plainly as
+         * "accepted 0 / rejected 252".
+         */
+        var nominalOk = Math.abs(wm - nominalLineSamples) <= LINE_TOLERANCE_SAMPLES;
+        var pass = nominalOk && (!gated || wsd <= LINE_TOLERANCE_SAMPLES);
+        lineWindow.n = wn;
+        lineWindow.mean = wm;
+        lineWindow.sd = wsd;
+        lineWindow.applied = pass;
+        if (pass) {
+          measuredLineSamples = wm;
+          if (gated) lineWindow.updates++;
+        } else {
+          lineWindow.rejected++;
         }
       }
+      lastSyncPos = pos;
       if (syncLen > 8) {
         var at = pos + Math.round(syncLen * 0.25);
         var len = Math.round(syncLen * 0.5);
@@ -828,12 +1219,35 @@
           if (line > 0 || chan > 0) seqStart += Math.round(measuredLineSamples);
           var res = alignSync(est, samples, sampleRate, mode, seqStart, true, calF);
           if (res == null) {
-            warnings.push('第 ' + line + ' 行后音频结束，图像不完整。');
-            truncated = true;
-            break;
+            /*
+             * FREE RUN, the Robot36 1.25-line rule.
+             *
+             * Upstream does not stop when a sync is missed: once 1.25 line periods pass without one it
+             * keeps decoding at the last known rate and re-locks when a pulse reappears. Our loop
+             * advances one line at a time, so "this line's sync was not found" is the discrete
+             * equivalent of that 1.25-line deadline. Previously this branch pushed a warning and broke
+             * out of the whole decode, so ONE missed sync - which the real recording produces
+             * constantly, since its music looks like sync pulses - threw away every remaining line.
+             *
+             * `seqStart` already carries the `+= measuredLineSamples` prediction from above, so the
+             * free-running line is demodulated at the last adjudicated rate, and the search for a real
+             * pulse continues on the next iteration.
+             */
+            freeRunLines++;
+            freeRunTotal++;
+            if (freeRunLines > MAX_FREE_RUN_LINES) {
+              warnings.push('第 ' + line + ' 行起连续 ' + MAX_FREE_RUN_LINES +
+                ' 行未找到同步脉冲，解码终止。');
+              truncated = true;
+              break;
+            }
+            if (auditRefsOut) auditRefsOut.push({ line: line, ref: seqStart, freeRun: true });
+          } else {
+            freeRunLines = 0;
+            seqStart = res;
+            if (auditRefsOut) auditRefsOut.push({ line: line, ref: res });
+            noteSync(res);
           }
-          seqStart = res;
-          noteSync(res);
         }
 
         var baseIdx = (line * channels + chan) * width;
@@ -861,7 +1275,13 @@
             truncated = true;
             break;
           }
-          var freq = est.peak(samples, pos, pixelWindow, confBox);
+          /*
+           * Restricted to the image band: without it this ~1 ms window searches the whole
+           * spectrum and locks onto whatever is loudest - on the real Scottie S1 recording that
+           * was content near 3 kHz, and calcLum clamped every such pixel to white.
+           */
+          var band = imageBandRaw(calA, calB);
+          var freq = est.peak(samples, pos, pixelWindow, confBox, 0, band[0], band[1]);
           data[baseIdx + px] = calcLum(calF(freq));
           if (confidence) confidence[baseIdx + px] = confBox[0];
         }
@@ -878,7 +1298,21 @@
     if (calib) {
       calib.aUsed = calA;
       calib.bUsed = calB;
-      calib.clockScale = measuredLineSamples / nominalLineSamples;
+      /*
+       * The measured line slope is always recorded, but it must NOT overwrite the scale that was
+       * actually used. With clockRecovery:false the scan ran with clockScale = 1, and clobbering
+       * that here made calibration.clockScale report 0.9785 anyway - which is exactly how the
+       * option came to look inoperative.
+       */
+      calib.measuredClockScale = measuredLineSamples / nominalLineSamples;
+      if (calib.clockRecoveryApplied !== false) calib.clockScale = calib.measuredClockScale;
+      /* Diagnostics for the per-pulse rate adjudication and the free-run fallback (phase 29). */
+      calib.lineWindow = {
+        window: LINE_WINDOW, toleranceSamples: LINE_TOLERANCE_SAMPLES,
+        lastN: lineWindow.n, lastMeanSamples: lineWindow.mean, lastSdSamples: lineWindow.sd,
+        accepted: lineWindow.updates, rejected: lineWindow.rejected
+      };
+      calib.freeRunTotal = freeRunTotal;
       calib.syncFreqAvg = syncFreqN ? syncFreqSum / syncFreqN : null;
     }
     return { data: data, confidence: confidence };
@@ -1087,7 +1521,10 @@
           var off = Math.round(centre - halfWindow);
           if (off < 0) off = 0;
           if (off + pixelWindow > samples.length) off = Math.max(0, samples.length - pixelWindow);
-          var fr = est.peak(samples, off, pixelWindow, wantConfidence ? cn : null);
+          /* Same restricted search as the line-sync family: the pixel window is only ~1 ms, so an
+             unrestricted peak follows whatever is loudest rather than the image tone. */
+          var bandPd = imageBandRaw(calA, calB);
+          var fr = est.peak(samples, off, pixelWindow, wantConfidence ? cn : null, 0, bandPd[0], bandPd[1]);
           var lum = calcLum(cf(fr));
           if (comp === 'Y') {
             var row = (s === 0) ? (p2 * 2) : (p2 * 2 + 1);
@@ -1130,6 +1567,244 @@
     return { imageData: { data: out, width: W, height: H }, confidence: conf, blockStarts: starts };
   }
 
+  /*
+   * ============================================================================================
+   * PHASE 49 - ADAPTIVE POST-PROCESSING (the noise gate).
+   *
+   * WHY IT EXISTS
+   *   The phase-49 degradation matrix shows the decoder is already robust where it matters most for
+   *   signal integrity: AWGN 6 dB still returns 21.93 dB and 8x clipping 29.50 dB, so neither noise nor
+   *   level is the weak axis. What it also shows is that the REAL phigros recording's decoded output
+   *   carries sigma_HF = 24.0 grey levels against the Robot36 reference render's 7.0 - 3.4x the
+   *   residual noise - and that residual is white (lag-1 along x -0.06, along y -0.12). That is
+   *   exactly the case a local filter can improve.
+   *
+   * WHY IT MUST BE GATED, AND WHY AN UNCONDITIONAL FILTER IS NOT ACCEPTABLE
+   *   Measured on the synthetic S1 control (truth known, baseline 30.50 dB), an unconditional 3x3
+   *   median drops PSNR to 24.61 dB - a 5.89 dB loss - because this photograph is full of genuine
+   *   fine detail that no filter can distinguish from noise. The acceptance rule is that the synthetic
+   *   round trips must not fall, so the filter is only ever applied when the decoder can show, from
+   *   its OWN output and with no reference, that the picture is noise-limited.
+   *
+   * THE GATE
+   *   sigmaFlat = RMS of the high-pass residual over pixels whose local gradient is in the picture's
+   *   lowest quartile. "Flat" is relative to the image itself, so the measure does not depend on the
+   *   picture's detail level in the way plain sigma_HF does - and plain sigma_HF genuinely does not
+   *   work, measured: a clean synthetic decode reads 12.12 and AWGN 20 dB reads 12.38.
+   *   Measured: synthetic clean 5.54, AWGN 20 dB 6.39, AWGN 10 dB 10.56, AWGN 6 dB 14.46,
+   *   phigros 15.16.
+   *   The threshold is 1.8 x the ~5.4 that a clean decode of a detailed picture reads, i.e. 9.67 -
+   *   deliberately above the AWGN 20 dB case, because at that level the filter gains ~0.1 dB and is
+   *   not worth the risk of touching a clean decode, and comfortably below phigros so the real
+   *   recording is filtered.
+   *
+   * WHAT THE SHIPPED DEFAULT ACTUALLY DOES (postprocess:'auto'), measured end to end:
+   *   synthetic S1 control   PSNR 30.50 -> 30.50  (gate bypasses: sigmaFlat 5.54 < 9.67)
+   *   synthetic M1 control   PSNR 31.26 -> 31.26  (same)
+   *   PD120 / PD180          32.46 / 32.62 unchanged
+   *   phigros                sigmaFlat 15.16 -> 10.08 (-33%), sigmaHF 24.03 -> 22.99,
+   *                          row correlation 0.6676 -> 0.6855
+   *
+   * THE FILTER
+   *   A 3x3 median applied ONLY where both hold:
+   *     |pixel - median| > tDiff   (the pixel is an outlier against its own neighbourhood), and
+   *     local gradient <= tGrad    (that neighbourhood is flat, so the median estimates noise rather
+   *                                 than straddling an edge).
+   *
+   * WHERE THE OPERATING POINT CAME FROM, AND WHY IT IS CONSERVATIVE
+   *   tests/denoise-calibrate.js sweeps both thresholds against four truth-known synthetic controls and
+   *   phigros. The measured trade-off, as (cost on the S1 control, phigros sigma_HF 24.03 -> ):
+   *
+   *     tGrad 1.5 sigma, 1 pass    30.50 -> 29.85  (-0.65 dB)   24.03 -> 21.94  (-8.7%)
+   *     tGrad 2.0 sigma, 1 pass    30.50 -> 29.51  (-0.99 dB)   24.03 -> 20.89  (-13.1%)
+   *     tGrad 3.0 sigma, 1 pass    30.50 -> 28.90  (-1.60 dB)   24.03 -> 19.56  (-18.6%)
+   *     tGrad 6.0 sigma, 1 pass    30.50 -> 27.70  (-2.80 dB)   24.03 -> 16.00  (-33.4%)
+   *
+   *   Dropping the gradient condition entirely was also measured and rejected: an outlier-only median
+   *   takes phigros a long way (sigma_HF -> 9.65, row correlation 0.6676 -> 0.9210) but costs 4.62 dB on
+   *   the control (30.50 -> 25.88), because this photograph's genuine fine detail is exactly as much of
+   *   an outlier against its neighbourhood as noise is.
+   *
+   *   The acceptance rule for this project is that the synthetic round trips must not fall, and every
+   *   setting that does anything substantial to phigros breaks it. The shipped DEFAULT is therefore the
+   *   conservative point below, whose cost on the control is small enough to remain inside the gate's
+   *   own margin; the useful-but-costly points are reachable with opts.postprocess = 'strong'.
+   * ============================================================================================
+   */
+  var POSTPROCESS_GATE_RATIO = 1.8;   // gate = ratio x the clean-decode reference level (5.37)
+  var CLEAN_SIGMA_FLAT_REF = 5.37;    // measured on the synthetic S1 control, truth known
+  /* Strength presets: [tDiff multiplier, tGrad multiplier, passes]. See the table above. */
+  var PP_PRESETS = {
+    gentle: [1.0, 0.5, 1],
+    strong: [0.5, 2.5, 1]
+  };
+
+  /**
+   * Flat-region noise estimate. No reference needed, which is what lets the decoder gate itself.
+   *
+   * @returns {{sigmaFlat:number, sigmaHF:number, flatFrac:number, rowGain:number}}
+   */
+  function measureFlatNoise(image) {
+    var w = image.width, h = image.height, d = image.data;
+    var n = w * h;
+    var lum = new Float64Array(n);
+    for (var i = 0, k = 0; i < d.length; i += 4, k++) {
+      lum[k] = 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2];
+    }
+    var grad = new Float64Array(n);
+    var res = new Float64Array(n);
+    for (var y = 0; y < h; y++) {
+      for (var x = 0; x < w; x++) {
+        var xm = x > 0 ? x - 1 : 0, xp = x < w - 1 ? x + 1 : w - 1;
+        var ym = y > 0 ? y - 1 : 0, yp = y < h - 1 ? y + 1 : h - 1;
+        var gx = lum[y * w + xp] - lum[y * w + xm];
+        var gy = lum[yp * w + x] - lum[ym * w + x];
+        grad[y * w + x] = Math.sqrt(gx * gx + gy * gy);
+        var s = 0, c = 0;
+        for (var dy = -1; dy <= 1; dy++) {
+          var yy = y + dy;
+          if (yy < 0 || yy >= h) continue;
+          for (var dx = -1; dx <= 1; dx++) {
+            var xx = x + dx;
+            if (xx < 0 || xx >= w) continue;
+            s += lum[yy * w + xx]; c++;
+          }
+        }
+        res[y * w + x] = lum[y * w + x] - s / c;
+      }
+    }
+    // gradient percentile, by a 16-bin histogram rather than a sort: this runs on every decode
+    var gmin = Infinity, gmax = -Infinity;
+    for (var q = 0; q < n; q++) { if (grad[q] < gmin) gmin = grad[q]; if (grad[q] > gmax) gmax = grad[q]; }
+    var BINS = 64, hist = new Int32Array(BINS);
+    var span = gmax - gmin;
+    if (span > 1e-9) {
+      for (var q2 = 0; q2 < n; q2++) {
+        var b = Math.floor((grad[q2] - gmin) / span * BINS);
+        if (b >= BINS) b = BINS - 1;
+        if (b < 0) b = 0;
+        hist[b]++;
+      }
+    } else {
+      hist[0] = n;
+    }
+    var want = 0.25 * n, acc = 0, cut = gmax;
+    for (var bi = 0; bi < BINS; bi++) {
+      acc += hist[bi];
+      if (acc >= want) { cut = gmin + span * (bi + 1) / BINS; break; }
+    }
+    var sumSq = 0, cnt = 0;
+    for (var q3 = 0; q3 < n; q3++) {
+      if (grad[q3] <= cut) { sumSq += res[q3] * res[q3]; cnt++; }
+    }
+    var mean = 0;
+    for (var r = 0; r < n; r++) mean += res[r];
+    mean /= n;
+    var v = 0;
+    for (var r2 = 0; r2 < n; r2++) { var t = res[r2] - mean; v += t * t; }
+    var sigmaHF = Math.sqrt(v / n);
+    // row-mean residual, as a row-coherence indicator (white noise gives ~ sigmaHF/sqrt(w))
+    var rowSq = 0;
+    for (var ry = 0; ry < h; ry++) {
+      var rs = 0;
+      for (var rx = 0; rx < w; rx++) rs += res[ry * w + rx];
+      var rm = rs / w;
+      rowSq += rm * rm;
+    }
+    var rowGain = sigmaHF > 1e-9 ? Math.sqrt(rowSq / h) / (sigmaHF / Math.sqrt(w)) : 0;
+    return {
+      sigmaFlat: Math.sqrt(sumSq / (cnt || 1)),
+      sigmaHF: sigmaHF,
+      flatFrac: cnt / n,
+      rowGain: rowGain
+    };
+  }
+
+  /**
+   * Selective median: only outliers inside flat neighbourhoods are replaced.
+   *
+   * @param {object} image  {width, height, data} RGBA
+   * @param {number} sigma  the image's own measured sigmaFlat, from measureFlatNoise
+   * @param {number} [tDiffMul]  outlier threshold, in multiples of sigma (default below)
+   * @param {number} [tGradMul]  flatness threshold, in multiples of sigma (default below)
+   */
+  function selectiveDenoise(image, sigma, tDiffMul, tGradMul) {
+    var w = image.width, h = image.height, src = image.data;
+    var out = new Uint8ClampedArray(src.length);
+    out.set(src);
+    var tDiff = (tDiffMul == null ? 1.0 : tDiffMul) * sigma;
+    var tGrad = (tGradMul == null ? 0.5 : tGradMul) * sigma;
+    var n = w * h;
+    var lum = new Float64Array(n);
+    for (var i = 0, k = 0; i < src.length; i += 4, k++) {
+      lum[k] = 0.299 * src[i] + 0.587 * src[i + 1] + 0.114 * src[i + 2];
+    }
+    var win = new Float64Array(9);
+    var sub = new Float64Array(9);
+    for (var c = 0; c < 3; c++) {
+      for (var y = 1; y < h - 1; y++) {
+        for (var x = 1; x < w - 1; x++) {
+          var gx = lum[y * w + x + 1] - lum[y * w + x - 1];
+          var gy = lum[(y + 1) * w + x] - lum[(y - 1) * w + x];
+          if (Math.sqrt(gx * gx + gy * gy) > tGrad) continue;
+          var cnt = 0;
+          for (var dy = -1; dy <= 1; dy++) {
+            for (var dx = -1; dx <= 1; dx++) {
+              win[cnt++] = src[((y + dy) * w + (x + dx)) * 4 + c];
+            }
+          }
+          for (var a = 0; a < cnt; a++) sub[a] = win[a];
+          // insertion sort: 9 elements, faster than Array.sort here and allocation-free
+          for (var a2 = 1; a2 < cnt; a2++) {
+            var key = sub[a2], b2 = a2 - 1;
+            while (b2 >= 0 && sub[b2] > key) { sub[b2 + 1] = sub[b2]; b2--; }
+            sub[b2 + 1] = key;
+          }
+          var med = sub[cnt >> 1];
+          var idx = (y * w + x) * 4 + c;
+          if (Math.abs(src[idx] - med) > tDiff) out[idx] = med;
+        }
+      }
+    }
+    return { width: w, height: h, data: out };
+  }
+
+  /**
+   * Apply the gate and, if it passes, the filter.
+   *
+   * @param {object} imageData
+   * @param {string} mode 'auto' (gate decides, gentle strength) | 'gentle' | 'strong' | 'off'
+   * @returns {{imageData:object, info:object}} the (possibly) filtered image plus what was decided,
+   *          so the UI and the reports can show WHY a picture was or was not filtered.
+   */
+  function applyAdaptivePostprocess(imageData, mode) {
+    var noise = measureFlatNoise(imageData);
+    var gate = POSTPROCESS_GATE_RATIO * CLEAN_SIGMA_FLAT_REF;
+    var requested = mode || 'auto';
+    var strength = requested === 'strong' ? 'strong' : 'gentle';
+    var preset = PP_PRESETS[strength];
+    var enabled = requested === 'strong' || requested === 'gentle' ||
+                  (requested === 'auto' && noise.sigmaFlat > gate);
+    if (!enabled) {
+      return { imageData: imageData, info: {
+        applied: false, requested: requested, sigmaFlat: noise.sigmaFlat, gate: gate,
+        sigmaHF: noise.sigmaHF, flatFrac: noise.flatFrac, rowGain: noise.rowGain
+      } };
+    }
+    var filtered = imageData;
+    for (var p = 0; p < preset[2]; p++) {
+      filtered = selectiveDenoise(filtered, noise.sigmaFlat, preset[0], preset[1]);
+    }
+    var after = measureFlatNoise(filtered);
+    return { imageData: filtered, info: {
+      applied: true, requested: requested, strength: strength,
+      tDiffMul: preset[0], tGradMul: preset[1], passes: preset[2],
+      sigmaFlat: noise.sigmaFlat, sigmaFlatAfter: after.sigmaFlat, gate: gate,
+      sigmaHF: noise.sigmaHF, sigmaHFAfter: after.sigmaHF,
+      flatFrac: noise.flatFrac, rowGain: noise.rowGain
+    } };
+  }
+
   function composeImageData(decoded, mode) {
     var width = mode.width;
     var height = mode.height;
@@ -1164,6 +1839,24 @@
     _internal: {
       Estimator: Estimator,
       alignSync: alignSync,
+      /**
+       * Phase-49 adaptive post-processing, exposed so tests/denoise-calibrate.js can sweep the gate
+       * and the filter against the SAME implementation that ships, instead of a copy that drifts.
+       */
+      postprocess: {
+        measureFlatNoise: measureFlatNoise,
+        selectiveDenoise: selectiveDenoise,
+        applyAdaptivePostprocess: applyAdaptivePostprocess,
+        constants: { POSTPROCESS_GATE_RATIO: POSTPROCESS_GATE_RATIO,
+          CLEAN_SIGMA_FLAT_REF: CLEAN_SIGMA_FLAT_REF }
+      },
+      /**
+       * Phase-48 gate observation. Set `_internal.alignStats = {calls:0,startOfSyncCalls:0,
+       * endOfSyncCalls:0,startInSync:0,startInImage:0,searchElected:0,bestFromSearch:0}` before a
+       * decode to count which branch alignSync took; set it back to null to remove the overhead.
+       * Null by default, so the production path is unaffected.
+       */
+      setAlignStats: function (s) { alignStats = s; },
       nextPow2: nextPow2,
       calcLum: calcLum,
       constants: {
