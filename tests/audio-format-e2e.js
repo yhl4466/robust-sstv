@@ -82,16 +82,15 @@ function buildFixtures() {
   // a RIFF/WAVE header with no chunks: passes the magic test, fails the strict parser
   fs.writeFileSync(f('fmt_truncated.wav'),
     Buffer.concat([Buffer.from('RIFF'), Buffer.from([0xff, 0xff, 0xff, 0xff]), Buffer.from('WAVE')]));
-  // a plausible Ogg header with garbage payload: the browser decoder must reject it
+  // A plausible Ogg header with garbage payload: the browser decoder must reject it.
   const junk = Buffer.alloc(32768);
   for (let i = 0; i < junk.length; i++) junk[i] = (i * 37 + 11) & 0xff;
   fs.writeFileSync(f('fmt_bad.ogg'), Buffer.concat([Buffer.from('OggS'), junk]));
-  // a sparse 101 MB file: logical size trips the guard, no real allocation
-  const big = f('fmt_toobig.m4a');
-  const fd = fs.openSync(big, 'w');
-  fs.writeSync(fd, Buffer.from([0, 0, 0, 0x1c, 0x66, 0x74, 0x79, 0x70, 0x4d, 0x34, 0x41, 0x20]));
-  fs.ftruncateSync(fd, 101 * 1024 * 1024);
-  fs.closeSync(fd);
+  /*
+   * There is deliberately NO oversize fixture on disk. A 100 MB+ file is rejected by Git hosting
+   * and is pure waste to store, so the oversize case is generated inside the page at run time -
+   * see section [C] below.
+   */
 
   return { wav: full, wav8k: low };
 }
@@ -349,9 +348,39 @@ async function main() {
     check(/截断|损坏/.test(st), 'headerless RIFF/WAVE -> "音频被截断或损坏"', st.replace(/\s+/g, ' ').slice(0, 60));
     const btnAfterErr = await cdp.evaluate(`document.getElementById('decodeBtn').disabled`);
     check(btnAfterErr === true, 'a failed load leaves the decode button disabled');
-    await upload(cdp, path.join(FIX, 'fmt_toobig.m4a'));
+
+    /*
+     * Oversize case, GENERATED IN THE PAGE and never written to disk. A stored 101 MB fixture is
+     * rejected by Git hosting (GitHub's per-file ceiling is 100 MB) and is pointless to keep, and
+     * the guard reads only file.size - so building a real File here exercises exactly the same
+     * code. It goes in through the real <input> via DataTransfer, so this stays a UI-path test
+     * rather than a direct API call.
+     */
+    const bigSize = await cdp.evaluate(`(function(){
+      var bytes = new Uint8Array(101 * 1024 * 1024);
+      bytes.set([0,0,0,0x1c,0x66,0x74,0x79,0x70,0x4d,0x34,0x41,0x20]);   // ftypM4A
+      var file = new File([bytes], 'generated_101mb.m4a', { type: 'audio/mp4' });
+      var dt = new DataTransfer(); dt.items.add(file);
+      var input = document.getElementById('wavInput');
+      input.files = dt.files;
+      document.getElementById('decStatus').textContent = '';
+      input.dispatchEvent(new Event('change'));
+      return file.size;
+    })()`);
+    check(bigSize === 101 * 1024 * 1024, 'oversize input generated in-page, no disk write',
+      bigSize + ' bytes');
+    await waitFor(cdp, `document.getElementById('decStatus').className.indexOf('err') >= 0`, 20000);
     st = await statusText(cdp);
     check(/文件过大/.test(st), 'oversize file -> size guard message', st.replace(/\s+/g, ' ').slice(0, 60));
+
+    // the threshold itself: exactly 100 MB must pass the guard, one byte more must not
+    const edge = await cdp.evaluate(`(async function(){
+      var over = await SSTVDecoder.parseAudio({ size: 100 * 1024 * 1024 + 1, name: 'x.m4a' });
+      var at   = await SSTVDecoder.parseAudio({ size: 100 * 1024 * 1024,     name: 'x.m4a' });
+      return { over: over.stage, at: at.stage };
+    })()`);
+    check(edge.over === 'size', 'guard rejects 100 MB + 1 byte', 'stage=' + edge.over);
+    check(edge.at !== 'size', 'guard admits exactly 100 MB (fails later, at read)', 'stage=' + edge.at);
 
     // ------------------------------------------------------------ [E] low rate warning
     console.log('\n[E] low sample rate warns about the PD family without blocking');

@@ -20,5 +20,10 @@ scripts/out/*.png
 
 # 系统
 Thumbs.db
-.DS_Storetests/fixtures/fmt_*.m4a 
-tests/fixtures/fmt_toobig.m4a 
+.DS_Store
+
+# 音频格式测试的生成物：测试每次运行都会重建，不入库
+# （fmt_toobig 不再落盘，超限用例改为在页面里运行时生成）
+tests/audio-samples/
+tests/fixtures/fmt_*
+tests/payload-samples/
