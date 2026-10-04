@@ -1,13 +1,13 @@
 {
-  "generatedAt": "2026-10-02T00:58:26.648Z",
+  "generatedAt": "2026-10-04T17:42:19.492Z",
   "node": "v24.19.0",
-  "ran": true,
+  "ran": false,
   "totals": {
-    "entries": 13,
-    "verdictSuites": 11,
-    "verdictPass": 10,
-    "verdictFail": 1,
-    "diagnostic": 2
+    "entries": 69,
+    "verdictSuites": 23,
+    "verdictPass": 0,
+    "verdictFail": 0,
+    "diagnostic": 46
   },
   "results": [
     {
@@ -15,130 +15,483 @@
       "kind": "verdict",
       "covers": "编码器逐样本频率与行结构",
       "exists": true,
-      "ms": 4783,
-      "exitCode": 0,
-      "verdict": "ENCODER VERIFIED",
-      "status": "pass"
+      "status": "not-run"
     },
     {
       "file": "tests/roundtrip.js",
       "kind": "verdict",
       "covers": "四模式编码往返与图象保真度",
       "exists": true,
-      "ms": 376434,
-      "exitCode": 0,
-      "verdict": "ALL CHECKS PASSED",
-      "status": "pass"
+      "status": "not-run"
     },
     {
       "file": "tests/channel-sim.test.js",
       "kind": "verdict",
       "covers": "信道模拟器五类退化",
       "exists": true,
-      "ms": 1716,
-      "exitCode": 0,
-      "verdict": "CHANNELSIM VERIFIED",
-      "status": "pass"
+      "status": "not-run"
     },
     {
       "file": "tests/fec-rs.test.js",
       "kind": "verdict",
       "covers": "里德-所罗门编解码与三重验证",
       "exists": true,
-      "ms": 793,
-      "exitCode": 0,
-      "verdict": "FECRS VERIFIED",
-      "status": "pass"
+      "status": "not-run"
     },
     {
       "file": "tests/interleaver.test.js",
       "kind": "verdict",
       "covers": "交织往返与突发分散",
       "exists": true,
-      "ms": 427,
-      "exitCode": 0,
-      "verdict": "INTERLEAVER VERIFIED",
-      "status": "pass"
+      "status": "not-run"
     },
     {
       "file": "tests/image-codec.test.js",
       "kind": "verdict",
       "covers": "秘密图编解码与图片帧",
       "exists": true,
-      "ms": 1511,
-      "exitCode": 0,
-      "verdict": "IMAGECODEC VERIFIED",
-      "status": "pass"
+      "status": "not-run"
     },
     {
       "file": "tests/pd-modes.test.js",
       "kind": "verdict",
       "covers": "PD120 与 PD180 往返",
       "exists": true,
-      "ms": 344257,
-      "exitCode": 0,
-      "verdict": "PD MODES VERIFIED",
-      "status": "pass"
+      "status": "not-run"
     },
     {
       "file": "tests/tech-html.test.js",
       "kind": "verdict",
       "covers": "技术报告结构、几何与文风",
       "exists": true,
-      "ms": 211,
-      "exitCode": 0,
-      "verdict": "TECH HTML VERIFIED",
-      "status": "pass"
+      "status": "not-run"
     },
     {
       "file": "tests/e2e-full.js",
       "kind": "verdict",
       "covers": "四模式完整链路（图→音频→信道→图）",
       "exists": true,
-      "ms": 162818,
-      "exitCode": 0,
-      "verdict": "E2E FULL VERIFIED",
-      "status": "pass"
+      "status": "not-run"
     },
     {
       "file": "tests/browser-e2e.js",
       "kind": "verdict",
       "covers": "浏览器端到端流程",
       "exists": true,
-      "ms": 289412,
-      "exitCode": 1,
-      "verdict": "BROWSER E2E: 3 CHECK(S) FAILED",
-      "status": "fail"
+      "status": "not-run"
     },
     {
       "file": "tests/image-pages-e2e.js",
       "kind": "verdict",
       "covers": "图片隐藏两个页面端到端",
       "exists": true,
-      "ms": 321699,
-      "exitCode": 0,
-      "verdict": "IMAGE PAGES E2E: ALL CHECKS PASSED",
-      "status": "pass"
+      "status": "not-run"
     },
     {
       "file": "tests/diagnose-align.js",
       "kind": "diagnostic",
       "covers": "同步对齐诊断",
       "exists": true,
-      "ms": 4488,
-      "exitCode": 0,
-      "verdict": null,
-      "status": "pass"
+      "status": "not-run"
+    },
+    {
+      "file": "tests/model-selftest.js",
+      "kind": "verdict",
+      "covers": "退化模型自检（频移/混响/削波）",
+      "exists": true,
+      "status": "not-run"
+    },
+    {
+      "file": "tests/frequency-axis.test.js",
+      "kind": "verdict",
+      "covers": "频率轴常量的量纲一致性",
+      "exists": true,
+      "status": "not-run"
+    },
+    {
+      "file": "tests/nav-check.js",
+      "kind": "verdict",
+      "covers": "导航一致性 + 图片隐藏冻结（入口移除、代码保留）",
+      "exists": true,
+      "status": "not-run"
+    },
+    {
+      "file": "tests/real-s1.test.js",
+      "kind": "verdict",
+      "covers": "真实 Scottie S1 录音（phigros）",
+      "exists": true,
+      "status": "not-run"
+    },
+    {
+      "file": "tests/channel-alignment.test.js",
+      "kind": "verdict",
+      "covers": "三通道分离度与对齐",
+      "exists": true,
+      "status": "not-run"
+    },
+    {
+      "file": "tests/degradation-matrix.js",
+      "kind": "diagnostic",
+      "covers": "抗干扰退化矩阵（6 维度 · 39 单元）",
+      "exists": true,
+      "status": "not-run"
+    },
+    {
+      "file": "tests/gen-baseline-report.js",
+      "kind": "diagnostic",
+      "covers": "由矩阵生成基线表",
+      "exists": true,
+      "status": "not-run"
+    },
+    {
+      "file": "tests/diagnose-measurement-validation.js",
+      "kind": "diagnostic",
+      "covers": "测量方法已知真值校验（含邻音污染层）",
+      "exists": true,
+      "status": "not-run"
+    },
+    {
+      "file": "tests/diagnose-channel-estimation.js",
+      "kind": "diagnostic",
+      "covers": "混响信道可估性（结论：反卷积上界 +0.08 dB）",
+      "exists": true,
+      "status": "not-run"
+    },
+    {
+      "file": "tests/diagnose-pixel-estimator.js",
+      "kind": "diagnostic",
+      "covers": "平坦图测像素估计器误差（结论：方差几乎不变，损失在离群值）",
+      "exists": true,
+      "status": "not-run"
+    },
+    {
+      "file": "tests/diagnose-freq-offset-channel.js",
+      "kind": "diagnostic",
+      "covers": "频偏失分在通道还是扫描段（结论：都不是）",
+      "exists": true,
+      "status": "not-run"
+    },
+    {
+      "file": "tests/diagnose-pixel-audit.js",
+      "kind": "diagnostic",
+      "covers": "逐像素频率审计：定位频偏不对称根因",
+      "exists": true,
+      "status": "not-run"
+    },
+    {
+      "file": "tests/sweep-band-margin.js",
+      "kind": "diagnostic",
+      "covers": "图像带余量扫描（否决了同步音泄漏假说）",
+      "exists": true,
+      "status": "not-run"
+    },
+    {
+      "file": "tests/sweep-band-guard.js",
+      "kind": "diagnostic",
+      "covers": "图像带下界护栏扫描（根因确认 + 代价实测）",
+      "exists": true,
+      "status": "not-run"
+    },
+    {
+      "file": "tests/diagnose-leader-lag.js",
+      "kind": "diagnostic",
+      "covers": "引导音定位的窗心 vs 窗首偏置来源",
+      "exists": true,
+      "status": "not-run"
+    },
+    {
+      "file": "tests/diagnose-real-levels.js",
+      "kind": "diagnostic",
+      "covers": "真机录音电平结构（标定头在 t≈106 s）",
+      "exists": true,
+      "status": "not-run"
+    },
+    {
+      "file": "tests/diagnose-header-anchor.js",
+      "kind": "diagnostic",
+      "covers": "解码器自报的标定头锁定位置",
+      "exists": true,
+      "status": "not-run"
+    },
+    {
+      "file": "tests/measure-demo-base.js",
+      "kind": "diagnostic",
+      "covers": "选定演示页基础音频（模式/采样率/时长）",
+      "exists": true,
+      "status": "not-run"
+    },
+    {
+      "file": "tests/measure-demo-timing.js",
+      "kind": "diagnostic",
+      "covers": "演示页解码耗时预算测量",
+      "exists": true,
+      "status": "not-run"
+    },
+    {
+      "file": "tests/bake-demo-ir.js",
+      "kind": "diagnostic",
+      "covers": "烘焙演示页房间冲激响应",
+      "exists": true,
+      "status": "not-run"
+    },
+    {
+      "file": "tests/verify-demo-ladder.js",
+      "kind": "verdict",
+      "covers": "演示页退化阶梯逐步验证（无空操作/无抛错）",
+      "exists": true,
+      "status": "not-run"
+    },
+    {
+      "file": "tests/check-curve-svg.js",
+      "kind": "verdict",
+      "covers": "退化曲线 SVG 结构与结论一致性",
+      "exists": true,
+      "status": "not-run"
+    },
+    {
+      "file": "tests/check-tech-section59.js",
+      "kind": "verdict",
+      "covers": "tech.html §5.9 图表与数值可追溯性",
+      "exists": true,
+      "status": "not-run"
+    },
+    {
+      "file": "tests/demo-page-cdp.js",
+      "kind": "verdict",
+      "covers": "演示页真机浏览器（file://）交互与截图",
+      "exists": true,
+      "status": "not-run"
+    },
+    {
+      "file": "tests/check-report-numbering.js",
+      "kind": "verdict",
+      "covers": "tech.html 图表编号唯一连续且引用不悬空",
+      "exists": true,
+      "status": "not-run"
+    },
+    {
+      "file": "tests/tech-section-cdp.js",
+      "kind": "verdict",
+      "covers": "tech.html §5.9 浏览器渲染与截图",
+      "exists": true,
+      "status": "not-run"
+    },
+    {
+      "file": "tests/gen-degradation-figure.js",
+      "kind": "diagnostic",
+      "covers": "生成六维退化并排对比图",
+      "exists": true,
+      "status": "not-run"
+    },
+    {
+      "file": "tests/diagnose-demo-convolve.js",
+      "kind": "diagnostic",
+      "covers": "演示页卷积正确性（delta 响应对照 IR）",
+      "exists": true,
+      "status": "not-run"
+    },
+    {
+      "file": "tests/diagnose-convolve-fft.js",
+      "kind": "diagnostic",
+      "covers": "复数 FFT 往返与逐抽头误差",
+      "exists": true,
+      "status": "not-run"
+    },
+    {
+      "file": "tests/diagnose-demo-decoder.js",
+      "kind": "diagnostic",
+      "covers": "演示页内省（decode 是否 async 等）",
+      "exists": true,
+      "status": "not-run"
+    },
+    {
+      "file": "tests/recover-outliers.js",
+      "kind": "diagnostic",
+      "covers": "离群像素恢复阈值扫描（決定 k 与第二道门）",
+      "exists": true,
+      "status": "not-run"
+    },
+    {
+      "file": "tests/recover-routing.js",
+      "kind": "diagnostic",
+      "covers": "离群恢复与温和降噪的组合顺序",
+      "exists": true,
+      "status": "not-run"
+    },
+    {
+      "file": "tests/diagnose-is-acoustic.js",
+      "kind": "diagnostic",
+      "covers": "声学指纹检测（区分真机录音与数字副本）",
+      "exists": true,
+      "status": "not-run"
+    },
+    {
+      "file": "tests/analyze-recording.js",
+      "kind": "verdict",
+      "covers": "录音分析（步骤 0 探针自校验，失败即拒绝报告）",
+      "exists": true,
+      "status": "not-run"
+    },
+    {
+      "file": "tests/diagnose-acoustic.js",
+      "kind": "diagnostic",
+      "covers": "声学组合诊断（真机 vs 合成，kind 严格区分）",
+      "exists": true,
+      "status": "not-run"
+    },
+    {
+      "file": "tests/diagnose-acoustic-ablation.js",
+      "kind": "diagnostic",
+      "covers": "acoustic-band 单因素消融",
+      "exists": true,
+      "status": "not-run"
+    },
+    {
+      "file": "tests/diagnose-acoustic-band-fixture.js",
+      "kind": "diagnostic",
+      "covers": "[工具不可用] acoustic-band 夹具探针",
+      "exists": true,
+      "status": "not-run"
+    },
+    {
+      "file": "tests/diagnose-header-map.js",
+      "kind": "diagnostic",
+      "covers": "[工具不可用] 标定头区域轨迹（起始定位错误）",
+      "exists": true,
+      "status": "not-run"
+    },
+    {
+      "file": "tests/diagnose-header-locate.js",
+      "kind": "diagnostic",
+      "covers": "[工具不可用] 标定头定位（起始定位错误）",
+      "exists": true,
+      "status": "not-run"
+    },
+    {
+      "file": "tests/diagnose-header-position.js",
+      "kind": "diagnostic",
+      "covers": "[工具不可用] 标定头位置与 SNR（起始定位错误）",
+      "exists": true,
+      "status": "not-run"
+    },
+    {
+      "file": "tests/diagnose-sync-threshold.js",
+      "kind": "diagnostic",
+      "covers": "同步检测门限的原始频率读数",
+      "exists": true,
+      "status": "not-run"
+    },
+    {
+      "file": "tests/diagnose-asymmetry-branches.js",
+      "kind": "diagnostic",
+      "covers": "频偏不对称：alignSync 分支计数",
+      "exists": true,
+      "status": "not-run"
+    },
+    {
+      "file": "tests/diagnose-header-slope-bias.js",
+      "kind": "diagnostic",
+      "covers": "标定斜率 a 的短窗偏置",
+      "exists": true,
+      "status": "not-run"
+    },
+    {
+      "file": "tests/diagnose-reverb.js",
+      "kind": "diagnostic",
+      "covers": "混响破坏的是哪一级",
+      "exists": true,
+      "status": "not-run"
+    },
+    {
+      "file": "tests/diagnose-phase49.js",
+      "kind": "diagnostic",
+      "covers": "阶段四十九分项诊断",
+      "exists": true,
+      "status": "not-run"
+    },
+    {
+      "file": "tests/denoise-calibrate.js",
+      "kind": "diagnostic",
+      "covers": "自适应降噪门控与强度标定",
+      "exists": true,
+      "status": "not-run"
+    },
+    {
+      "file": "tests/denoise-sweep.js",
+      "kind": "diagnostic",
+      "covers": "降噪强度扫描与 Robot36 参照对比",
+      "exists": true,
+      "status": "not-run"
+    },
+    {
+      "file": "tests/render-phigros.js",
+      "kind": "diagnostic",
+      "covers": "以生产路径渲染 phigros 为 PNG",
+      "exists": true,
+      "status": "not-run"
+    },
+    {
+      "file": "tests/browser-visual.js",
+      "kind": "diagnostic",
+      "covers": "浏览器解码 phigros 并截图",
+      "exists": true,
+      "status": "not-run"
+    },
+    {
+      "file": "tests/diff-rasters.js",
+      "kind": "diagnostic",
+      "covers": "两份栅格逐像素对比",
+      "exists": true,
+      "status": "not-run"
+    },
+    {
+      "file": "tests/locate-robot36-raster.js",
+      "kind": "diagnostic",
+      "covers": "定位 Robot36 截图的栅格区域",
+      "exists": true,
+      "status": "not-run"
+    },
+    {
+      "file": "tests/verify-freqshift.js",
+      "kind": "diagnostic",
+      "covers": "频移实现与 FFT 参考对拍（含参考自校验）",
+      "exists": true,
+      "status": "not-run"
+    },
+    {
+      "file": "tests/diagnose-real-drift.js",
+      "kind": "diagnostic",
+      "covers": "[结论作废] 分段频偏（邻音污染 bias -51.5 Hz）",
+      "exists": true,
+      "status": "not-run"
+    },
+    {
+      "file": "tests/diagnose-real-drift-confirm.js",
+      "kind": "diagnostic",
+      "covers": "[结论作废] 分段频偏确认（自身对照偏 22.5 Hz）",
+      "exists": true,
+      "status": "not-run"
+    },
+    {
+      "file": "tests/diagnose-real-drift-final.js",
+      "kind": "diagnostic",
+      "covers": "[结论作废] 以锁定位置测频（自身对照偏 94 Hz）",
+      "exists": true,
+      "status": "not-run"
+    },
+    {
+      "file": "tests/diagnose-calibration-consistency.js",
+      "kind": "diagnostic",
+      "covers": "[结论作废] 标定内部一致性（头部探针偏 37 Hz）",
+      "exists": true,
+      "status": "not-run"
     },
     {
       "file": "tests/perf.js",
       "kind": "benchmark",
       "covers": "性能基准",
       "exists": true,
-      "ms": 105824,
-      "exitCode": 0,
-      "verdict": null,
-      "status": "pass"
+      "status": "not-run"
     }
   ]
 }

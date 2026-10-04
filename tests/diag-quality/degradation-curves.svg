@@ -1,0 +1,151 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 990 657" width="100%" role="img" aria-label="六种退化下的解码 PSNR 曲线" font-family="system-ui, -apple-system, Segoe UI, sans-serif">
+<title>图 14 六类退化的解码 PSNR 曲线</title>
+<rect width="990" height="486" fill="#0e1116"/>
+<line x1="58" y1="460.0" x2="618" y2="460.0" stroke="#20262f" stroke-width="1"/>
+<text x="50" y="464.0" fill="#7d8794" font-size="10.5" text-anchor="end">4</text>
+<line x1="58" y1="431.3" x2="618" y2="431.3" stroke="#20262f" stroke-width="1"/>
+<text x="50" y="435.3" fill="#7d8794" font-size="10.5" text-anchor="end">6</text>
+<line x1="58" y1="402.7" x2="618" y2="402.7" stroke="#20262f" stroke-width="1"/>
+<text x="50" y="406.7" fill="#7d8794" font-size="10.5" text-anchor="end">8</text>
+<line x1="58" y1="374.0" x2="618" y2="374.0" stroke="#20262f" stroke-width="1"/>
+<text x="50" y="378.0" fill="#7d8794" font-size="10.5" text-anchor="end">10</text>
+<line x1="58" y1="345.3" x2="618" y2="345.3" stroke="#20262f" stroke-width="1"/>
+<text x="50" y="349.3" fill="#7d8794" font-size="10.5" text-anchor="end">12</text>
+<line x1="58" y1="316.7" x2="618" y2="316.7" stroke="#20262f" stroke-width="1"/>
+<text x="50" y="320.7" fill="#7d8794" font-size="10.5" text-anchor="end">14</text>
+<line x1="58" y1="288.0" x2="618" y2="288.0" stroke="#20262f" stroke-width="1"/>
+<text x="50" y="292.0" fill="#7d8794" font-size="10.5" text-anchor="end">16</text>
+<line x1="58" y1="259.3" x2="618" y2="259.3" stroke="#20262f" stroke-width="1"/>
+<text x="50" y="263.3" fill="#7d8794" font-size="10.5" text-anchor="end">18</text>
+<line x1="58" y1="230.7" x2="618" y2="230.7" stroke="#20262f" stroke-width="1"/>
+<text x="50" y="234.7" fill="#7d8794" font-size="10.5" text-anchor="end">20</text>
+<line x1="58" y1="202.0" x2="618" y2="202.0" stroke="#20262f" stroke-width="1"/>
+<text x="50" y="206.0" fill="#7d8794" font-size="10.5" text-anchor="end">22</text>
+<line x1="58" y1="173.3" x2="618" y2="173.3" stroke="#20262f" stroke-width="1"/>
+<text x="50" y="177.3" fill="#7d8794" font-size="10.5" text-anchor="end">24</text>
+<line x1="58" y1="144.7" x2="618" y2="144.7" stroke="#20262f" stroke-width="1"/>
+<text x="50" y="148.7" fill="#7d8794" font-size="10.5" text-anchor="end">26</text>
+<line x1="58" y1="116.0" x2="618" y2="116.0" stroke="#20262f" stroke-width="1"/>
+<text x="50" y="120.0" fill="#7d8794" font-size="10.5" text-anchor="end">28</text>
+<line x1="58" y1="87.3" x2="618" y2="87.3" stroke="#20262f" stroke-width="1"/>
+<text x="50" y="91.3" fill="#7d8794" font-size="10.5" text-anchor="end">30</text>
+<line x1="58" y1="58.7" x2="618" y2="58.7" stroke="#20262f" stroke-width="1"/>
+<text x="50" y="62.7" fill="#7d8794" font-size="10.5" text-anchor="end">32</text>
+<line x1="58" y1="30.0" x2="618" y2="30.0" stroke="#20262f" stroke-width="1"/>
+<text x="50" y="34.0" fill="#7d8794" font-size="10.5" text-anchor="end">34</text>
+<text x="50" y="18" fill="#7d8794" font-size="10.5" text-anchor="end">dB</text>
+<rect x="58" y="30" width="560" height="129.0" fill="#37b98a" opacity="0.05"/>
+<line x1="58" y1="159.0" x2="618" y2="159.0" stroke="#37b98a" stroke-width="1.4" stroke-dasharray="6 4" opacity="0.8"/>
+<text x="64" y="153.0" fill="#37b98a" font-size="10.5">可用阈值 25 dB</text>
+<polyline fill="none" stroke="#4c9aff" stroke-width="2.2" stroke-linejoin="round" points="58.0,152.7 170.0,155.2 282.0,161.4 394.0,171.7 506.0,199.2 618.0,224.5"/>
+<circle cx="58.0" cy="152.7" r="3.2" fill="#4c9aff"/>
+<circle cx="170.0" cy="155.2" r="3.2" fill="#4c9aff"/>
+<circle cx="282.0" cy="161.4" r="3.2" fill="#4c9aff"/>
+<circle cx="394.0" cy="171.7" r="3.2" fill="#4c9aff"/>
+<circle cx="506.0" cy="199.2" r="3.2" fill="#4c9aff"/>
+<circle cx="618.0" cy="224.5" r="3.2" fill="#4c9aff"/>
+<line x1="239.1" y1="159.0" x2="239.1" y2="460" stroke="#4c9aff" stroke-width="1" stroke-dasharray="3 3" opacity="0.45"/>
+<circle cx="239.1" cy="159.0" r="3.8" fill="none" stroke="#4c9aff" stroke-width="1.5"/>
+<polyline fill="none" stroke="#f5a623" stroke-width="2.2" stroke-linejoin="round" points="58.0,152.7 170.0,157.1 282.0,160.2 394.0,165.0 506.0,169.2 618.0,188.6"/>
+<circle cx="58.0" cy="152.7" r="3.2" fill="#f5a623"/>
+<circle cx="170.0" cy="157.1" r="3.2" fill="#f5a623"/>
+<circle cx="282.0" cy="160.2" r="3.2" fill="#f5a623"/>
+<circle cx="394.0" cy="165.0" r="3.2" fill="#f5a623"/>
+<circle cx="506.0" cy="169.2" r="3.2" fill="#f5a623"/>
+<circle cx="618.0" cy="188.6" r="3.2" fill="#f5a623"/>
+<line x1="238.3" y1="159.0" x2="238.3" y2="460" stroke="#f5a623" stroke-width="1" stroke-dasharray="3 3" opacity="0.45"/>
+<circle cx="238.3" cy="159.0" r="3.8" fill="none" stroke="#f5a623" stroke-width="1.5"/>
+<polyline fill="none" stroke="#e8574a" stroke-width="2.2" stroke-linejoin="round" points="58.0,152.7 151.3,157.9 244.7,155.9 338.0,146.7 431.3,134.1 524.7,133.2 618.0,423.5"/>
+<circle cx="58.0" cy="152.7" r="3.2" fill="#e8574a"/>
+<circle cx="151.3" cy="157.9" r="3.2" fill="#e8574a"/>
+<circle cx="244.7" cy="155.9" r="3.2" fill="#e8574a"/>
+<circle cx="338.0" cy="146.7" r="3.2" fill="#e8574a"/>
+<circle cx="431.3" cy="134.1" r="3.2" fill="#e8574a"/>
+<circle cx="524.7" cy="133.2" r="3.2" fill="#e8574a"/>
+<circle cx="618.0" cy="423.5" r="3.2" fill="#e8574a"/>
+<line x1="533.0" y1="159.0" x2="533.0" y2="460" stroke="#e8574a" stroke-width="1" stroke-dasharray="3 3" opacity="0.45"/>
+<circle cx="533.0" cy="159.0" r="3.8" fill="none" stroke="#e8574a" stroke-width="1.5"/>
+<polyline fill="none" stroke="#ff8f7a" stroke-width="2.2" stroke-linejoin="round" points="58.0,177.9 170.0,219.5 282.0,285.8 394.0,324.9 506.0,361.9 618.0,404.5"/>
+<circle cx="58.0" cy="177.9" r="3.2" fill="#ff8f7a"/>
+<circle cx="170.0" cy="219.5" r="3.2" fill="#ff8f7a"/>
+<circle cx="282.0" cy="285.8" r="3.2" fill="#ff8f7a"/>
+<circle cx="394.0" cy="324.9" r="3.2" fill="#ff8f7a"/>
+<circle cx="506.0" cy="361.9" r="3.2" fill="#ff8f7a"/>
+<circle cx="618.0" cy="404.5" r="3.2" fill="#ff8f7a"/>
+<polyline fill="none" stroke="#9b7dea" stroke-width="2.2" stroke-linejoin="round" points="58.0,152.7 151.3,182.8 244.7,216.0 338.0,262.9 431.3,323.3 524.7,366.0"/>
+<circle cx="58.0" cy="152.7" r="3.2" fill="#9b7dea"/>
+<circle cx="151.3" cy="182.8" r="3.2" fill="#9b7dea"/>
+<circle cx="244.7" cy="216.0" r="3.2" fill="#9b7dea"/>
+<circle cx="338.0" cy="262.9" r="3.2" fill="#9b7dea"/>
+<circle cx="431.3" cy="323.3" r="3.2" fill="#9b7dea"/>
+<circle cx="524.7" cy="366.0" r="3.2" fill="#9b7dea"/>
+<text x="618.0" y="456" fill="#9b7dea" font-size="13" text-anchor="middle" opacity="0.85">×</text>
+<line x1="77.6" y1="159.0" x2="77.6" y2="460" stroke="#9b7dea" stroke-width="1" stroke-dasharray="3 3" opacity="0.45"/>
+<circle cx="77.6" cy="159.0" r="3.8" fill="none" stroke="#9b7dea" stroke-width="1.5"/>
+<polyline fill="none" stroke="#37b98a" stroke-width="2.2" stroke-linejoin="round" points="58.0,262.1 244.7,372.3"/>
+<circle cx="58.0" cy="262.1" r="3.2" fill="#37b98a"/>
+<circle cx="244.7" cy="372.3" r="3.2" fill="#37b98a"/>
+<text x="431.3" y="456" fill="#37b98a" font-size="13" text-anchor="middle" opacity="0.85">×</text>
+<text x="618.0" y="456" fill="#37b98a" font-size="13" text-anchor="middle" opacity="0.85">×</text>
+<polyline fill="none" stroke="#c9a227" stroke-width="2.2" stroke-linejoin="round" points="58.0,370.6 198.0,370.1 338.0,370.8"/>
+<circle cx="58.0" cy="370.6" r="3.2" fill="#c9a227"/>
+<circle cx="198.0" cy="370.1" r="3.2" fill="#c9a227"/>
+<circle cx="338.0" cy="370.8" r="3.2" fill="#c9a227"/>
+<text x="478.0" y="456" fill="#c9a227" font-size="13" text-anchor="middle" opacity="0.85">×</text>
+<circle cx="618.0" cy="139.7" r="3.2" fill="#c9a227"/>
+<polyline fill="none" stroke="#6f7b8a" stroke-width="2.2" stroke-linejoin="round" points="58.0,111.6 338.0,111.6 618.0,111.6"/>
+<circle cx="58.0" cy="111.6" r="3.2" fill="#6f7b8a"/>
+<circle cx="338.0" cy="111.6" r="3.2" fill="#6f7b8a"/>
+<circle cx="618.0" cy="111.6" r="3.2" fill="#6f7b8a"/>
+<text x="648" y="18" fill="#7d8794" font-size="10.5">曲线 · 可用范围</text>
+<line x1="648" y1="41" x2="668" y2="41" stroke="#4c9aff" stroke-width="2.6"/>
+<circle cx="658" cy="41" r="3" fill="#4c9aff"/>
+<text x="676" y="38" fill="#c8d0da" font-size="11.5">加性噪声：可用至 30 dB 与 20 dB 之间</text>
+<text x="676" y="53" fill="#8d97a3" font-size="10.5">30 dB 25.3 dB → 20 dB 24.8 dB</text>
+<line x1="648" y1="83" x2="668" y2="83" stroke="#f5a623" stroke-width="2.6"/>
+<circle cx="658" cy="83" r="3" fill="#f5a623"/>
+<text x="676" y="80" fill="#c8d0da" font-size="11.5">硬削波：可用至 1.5× 与 2× 之间</text>
+<text x="676" y="95" fill="#8d97a3" font-size="10.5">1.5× 25.1 dB → 2× 24.9 dB</text>
+<line x1="648" y1="125" x2="668" y2="125" stroke="#e8574a" stroke-width="2.6"/>
+<circle cx="658" cy="125" r="3" fill="#e8574a"/>
+<text x="676" y="122" fill="#c8d0da" font-size="11.5">频率失谐（正向）：可用至 +50 Hz 与 +100 Hz 之间</text>
+<text x="676" y="137" fill="#8d97a3" font-size="10.5">+50 Hz 26.8 dB → +100 Hz 6.5 dB</text>
+<line x1="648" y1="167" x2="668" y2="167" stroke="#ff8f7a" stroke-width="2.6"/>
+<circle cx="658" cy="167" r="3" fill="#ff8f7a"/>
+<text x="676" y="164" fill="#c8d0da" font-size="11.5">频率失谐（负向）：起点即低于阈值</text>
+<text x="676" y="179" fill="#8d97a3" font-size="10.5">-5 Hz 23.7 dB</text>
+<line x1="648" y1="209" x2="668" y2="209" stroke="#9b7dea" stroke-width="2.6"/>
+<circle cx="658" cy="209" r="3" fill="#9b7dea"/>
+<text x="676" y="206" fill="#c8d0da" font-size="11.5">采样率失配：可用至 0 % 与 0.05 % 之间</text>
+<text x="676" y="221" fill="#8d97a3" font-size="10.5">0 % 25.4 dB → 0.05 % 23.3 dB</text>
+<line x1="648" y1="251" x2="668" y2="251" stroke="#37b98a" stroke-width="2.6"/>
+<circle cx="658" cy="251" r="3" fill="#37b98a"/>
+<text x="676" y="248" fill="#c8d0da" font-size="11.5">声学路径（混响）：起点即低于阈值</text>
+<text x="676" y="263" fill="#8d97a3" font-size="10.5">0.20 17.8 dB</text>
+<line x1="648" y1="293" x2="668" y2="293" stroke="#c9a227" stroke-width="2.6"/>
+<circle cx="658" cy="293" r="3" fill="#c9a227"/>
+<text x="676" y="290" fill="#c8d0da" font-size="11.5">组合退化：起点即低于阈值</text>
+<text x="676" y="305" fill="#8d97a3" font-size="10.5">灯下干净（RT60 0.3 + +10 Hz 失谐） 10.2 dB</text>
+<line x1="648" y1="335" x2="668" y2="335" stroke="#6f7b8a" stroke-width="2.6"/>
+<circle cx="658" cy="335" r="3" fill="#6f7b8a"/>
+<text x="676" y="332" fill="#c8d0da" font-size="11.5">JPEG 重编码：本阶梯全程可用</text>
+<text x="676" y="347" fill="#8d97a3" font-size="10.5">最低 28.3 dB（q30）</text>
+<rect x="58" y="478" width="9" height="9" fill="#4c9aff" rx="1.5"/>
+<text x="72" y="486" fill="#8d97a3" font-size="10">加性噪声：clean · 30 dB · 20 dB · 15 dB · 10 dB · 6 dB</text>
+<rect x="58" y="495" width="9" height="9" fill="#f5a623" rx="1.5"/>
+<text x="72" y="503" fill="#8d97a3" font-size="10">硬削波：1× · 1.5× · 2× · 3× · 4× · 8×</text>
+<rect x="58" y="512" width="9" height="9" fill="#e8574a" rx="1.5"/>
+<text x="72" y="520" fill="#8d97a3" font-size="10">频率失谐（正向）：0 · +5 Hz · +10 Hz · +20 Hz · +30 Hz · +50 Hz · +100 Hz</text>
+<rect x="58" y="529" width="9" height="9" fill="#ff8f7a" rx="1.5"/>
+<text x="72" y="537" fill="#8d97a3" font-size="10">频率失谐（负向）：-5 Hz · -10 Hz · -20 Hz · -30 Hz · -50 Hz · -100 Hz</text>
+<rect x="58" y="546" width="9" height="9" fill="#9b7dea" rx="1.5"/>
+<text x="72" y="554" fill="#8d97a3" font-size="10">采样率失配：0 % · 0.05 % · 0.1 % · 0.2 % · 0.5 % · 1 % · 2 %</text>
+<rect x="58" y="563" width="9" height="9" fill="#37b98a" rx="1.5"/>
+<text x="72" y="571" fill="#8d97a3" font-size="10">声学路径（混响）：0.20 · 0.30 · 0.60 · 1.00</text>
+<rect x="58" y="580" width="9" height="9" fill="#c9a227" rx="1.5"/>
+<text x="72" y="588" fill="#8d97a3" font-size="10">组合退化：灯下干净（RT60 0.3 + +10 Hz 失谐） · 手机外放（RT60 0.3 + 削波 3× + +20 Hz）</text>
+<text x="72" y="601" fill="#8d97a3" font-size="10">弱信号（SNR 15 + RT60 0.3 + +20 Hz） · 最坏（SNR 10 + RT60 0.6 + 削波 3× + +50 Hz + 0.5%） SSB 失谐 + 噪声（+50 Hz + SNR 20）</text>
+<rect x="58" y="610" width="9" height="9" fill="#6f7b8a" rx="1.5"/>
+<text x="72" y="618" fill="#8d97a3" font-size="10">JPEG 重编码：q85 · q60 · q30</text>
+<text x="58" y="643" fill="#69737f" font-size="10.5">横轴：各维度在自身档位序列中的位置（六维单位不相通，不共用实轴）· × 表示该档解码失败 · 未画 Robot36 —— 无其逐维度实测数据</text>
+</svg>

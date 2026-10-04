@@ -320,8 +320,9 @@
 
     rows.push('<h3>各模式可嵌入容量估算</h3>');
     rows.push('<p class="hint">按模式结构解析得出的<b>解析估算</b>，不是已实现的隐写信道测量值。' +
-      '默认生效的 <code>identity</code> 嵌入器为直通（容量 0），下表为各模式在相应方案下的<b>上限估算</b>；' +
-      '已实现的图片隐藏见 <a href="embed-image.html">图片隐藏 · 嵌入端</a>。</p>');
+      '默认生效的 <code>identity</code> 嵌入器为直通（容量 0），下表为各模式在相应方案下的<b>上限估算</b>。' +
+      '图片隐藏功能已冻结并移出导航；秘密图载荷预算仅 200 字节，需要真正的隐写请用 ' +
+      '<a href="https://yhl4466.github.io/robust-stego/" target="_blank" rel="noopener">RobustStego</a>。</p>');
     rows.push('<table><thead><tr><th>模式</th><th>像素槽位</th><th>亮度QIM 1bit</th><th>亮度QIM 2bit</th>' +
       '<th>色度QIM 1bit</th><th>消隐段FSK符号</th><th>同步段FSK符号</th></tr></thead><tbody>');
     Encoder.modes().forEach(function (m) {
@@ -339,9 +340,17 @@
         '<td>' + cap.estimates.syncFsk + '</td></tr>');
     });
     rows.push('</tbody></table>');
-    $('extPanel').innerHTML = rows.join('');
+    /*
+     * The hosting panel was removed from index.html when the image-hiding feature was frozen out of the
+     * navigation, so these elements no longer exist. Guarded rather than deleted: renderExtensions is
+     * still a working, testable summary of the extension points, and re-attaching it to a page later
+     * should not require restoring wiring that was thrown away.
+     */
+    var panel = $('extPanel');
+    if (panel) panel.innerHTML = rows.join('');
   }
-  $('extRefresh').addEventListener('click', renderExtensions);
+  var refreshBtn = $('extRefresh');
+  if (refreshBtn) refreshBtn.addEventListener('click', renderExtensions);
 
   // ============================================================ PHASE-2 PANEL
   /* Runs the whole payload link in the browser: frame -> RS -> interleave ->

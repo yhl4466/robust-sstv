@@ -365,3 +365,64 @@ details.expert[open] > summary::before { content: "▾ "; }
   .nav-links a { padding: 12px 14px; font-size: 15px; }
 }
 
+/* ==================================================================== 抗干扰实时演示页
+ *
+ * Scoped to .demo-* so nothing here can reach the encode/decode pages. The layout is a single column at
+ * every width: the page's whole point is a slider above two images, and a multi-column arrangement at wide
+ * widths would separate the control from what it controls.
+ */
+.demo-card { padding: 18px 20px 20px; }
+.demo-row { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 12px; flex-wrap: wrap; }
+.demo-label { flex: 0 0 72px; padding-top: 7px; font-size: 13px; color: var(--fg-mute); }
+
+.demo-tabs { display: flex; flex-wrap: wrap; gap: 8px; }
+.demo-tab {
+  background: var(--bg-soft); color: var(--fg-dim); border: 1px solid var(--border);
+  padding: 7px 13px; border-radius: 999px; font-size: 13px; cursor: pointer;
+}
+.demo-tab:hover { color: var(--fg); }
+.demo-tab.active { background: var(--accent); color: #06121f; border-color: var(--accent); font-weight: 600; }
+
+.demo-slider { flex: 1 1 340px; min-width: 260px; }
+.demo-slider input[type="range"] { width: 100%; accent-color: var(--accent); }
+
+/* Tick labels double as click targets, so the slider has named stops rather than a bare number. */
+.demo-ticks { display: flex; justify-content: space-between; gap: 4px; margin-top: 6px; }
+.demo-tick {
+  flex: 1 1 0; display: flex; flex-direction: column; align-items: center; gap: 2px;
+  font-size: 11.5px; color: var(--fg-mute); cursor: pointer; text-align: center; line-height: 1.3;
+}
+.demo-tick b { font-weight: 600; font-family: var(--mono); }
+.demo-tick i { font-style: normal; font-size: 10.5px; opacity: 0.75; }
+.demo-tick:hover b { color: var(--fg); }
+.demo-tick.active b { color: var(--accent); }
+.demo-tick.active i { opacity: 1; }
+
+.demo-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 16px; }
+.demo-status { font-size: 12.5px; color: var(--fg-mute); }
+.demo-progress { margin-top: 10px; height: 4px; background: var(--bg-soft); border-radius: 2px; overflow: hidden; }
+.demo-progress > div { height: 100%; width: 0; background: var(--accent); transition: width .18s linear; }
+
+.demo-canvas { width: 100%; height: auto; image-rendering: pixelated; background: #0d1015; border-radius: 6px; }
+
+.demo-metrics { margin-top: 18px; }
+.demo-verdict { padding: 10px 13px; border-radius: 6px; font-size: 14px; font-weight: 600; margin-bottom: 12px; }
+.demo-verdict.good { background: rgba(70, 200, 120, .13); color: #7ee2a8; border: 1px solid rgba(70, 200, 120, .3); }
+.demo-verdict.bad { background: rgba(240, 100, 100, .13); color: #ff9a9a; border: 1px solid rgba(240, 100, 100, .3); }
+
+.demo-metric-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.demo-metric-table th { text-align: left; font-weight: 500; color: var(--fg-mute); padding: 6px 12px 6px 0; white-space: nowrap; }
+.demo-metric-table td { padding: 6px 12px 6px 0; font-family: var(--mono); }
+.demo-metric-note { color: var(--fg-mute); font-family: inherit !important; font-size: 12px; }
+
+.demo-notes { margin: 10px 0 0; padding-left: 20px; font-size: 13px; color: var(--fg-dim); line-height: 1.75; }
+.demo-notes li { margin-bottom: 6px; }
+.demo-notes code { font-family: var(--mono); font-size: 12px; color: var(--fg); }
+
+@media (max-width: 640px) {
+  .demo-label { flex-basis: 100%; padding-top: 0; }
+  .demo-ticks { flex-wrap: wrap; }
+  .demo-tick { flex: 0 0 31%; }
+}
+
+

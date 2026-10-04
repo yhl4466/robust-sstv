@@ -1,14 +1,28 @@
 /*
  * Verify the frequency-shift impairment against an FFT-based reference, on REAL signal content.
  *
- * The matrix reports a strong asymmetry - +50 Hz decodes at 31.29 dB but -50 Hz at 17.30 dB - and an
- * asymmetry that large cannot come from a spectral shift, which is symmetric by construction. Either
- * the decoder handles negative offsets badly or the shift itself is one-sided, and a tone test cannot
- * tell them apart (a tone shifts correctly by construction of the formula).
+ * WHY: the matrix reports a strong asymmetry (+50 Hz decodes at 31.29 dB, -50 Hz at 17.30 dB) and a
+ * spectral shift is symmetric by construction, so either the decoder handles negative offsets badly or
+ * the impairment model is one-sided. A tone test cannot tell those apart, so this compares against an
+ * independent reference that shares no code with the Hilbert implementation.
  *
- * So this compares our Hilbert-based shift against an independent reference that shares no code with
- * it: the analytic-signal method built with a full FFT (zero the negative frequencies, rotate, take the
- * real part). The test signal is real SSTV audio, so any dependence on content or on frequency appears.
+ * THE FIRST VERSION OF THIS REFERENCE WAS ITSELF BROKEN, and the way it was broken is worth recording
+ * because the failure was silent:
+ *
+ *   - it copied only the first half of the spectrum (k <= N/2) into R/I and left the second half at ZERO
+ *   - it therefore never zeroed the negative frequencies; it just deleted them, which is not the same
+ *     operation
+ *   - with the negative half gone it applied a Hermitian completion that rebuilt them WITHOUT the
+ *     rotation, so the negative-frequency energy stayed at its original phase
+ *
+ * The result was a "reference" that shifted nothing: it reported a 0 Hz shift for every input, at 2x
+ * amplitude (measured RMS 0.7071 against an input of 0.3535). Any implementation compared against it
+ * would have looked wrong.
+ *
+ * The corrected reference therefore also VERIFIES ITSELF before being used - it is run on a pure tone of
+ * known frequency and its output frequency is measured, because an unvalidated reference is worse than
+ * no reference at all. That lesson is the reason tests/model-selftest.js exists for the impairment
+ * models; this file now carries the same discipline for the one model that had escaped it.
  *
  * Usage: node tests/verify-freqshift.js
  */
@@ -24,46 +38,84 @@ require(path.join(ROOT, 'js', 'lib', 'fft.js'));
 const SRC = fs.readFileSync(path.join(__dirname, 'degradation-matrix.js'), 'utf8');
 const from = SRC.indexOf('function hilbertFIR');
 const to = SRC.indexOf('/** Decoder lock residuals');
-const OURS = new Function('SR', SRC.slice(from, to) + '\nreturn { freqShift: freqShift };')(SR).freqShift;
+const OURS = new Function('SR', SRC.slice(from, from >= 0 && to > from ? to : undefined) +
+  '\nreturn { freqShift: freqShift };')(SR).freqShift;
 
-/** Reference: exact analytic-signal frequency shift via a full FFT. */
+/**
+ * Reference: exact frequency shift by spectral translation of the analytic signal.
+ *
+ * The construction, and the reason each step exists:
+ *
+ *   1. take the real-input DFT. For a real signal it is conjugate-symmetric: bin k and bin N-k carry the
+ *      same component with half the amplitude each.
+ *   2. build the ANALYTIC spectrum: double the positive bins (1..N/2-1), zero everything above N/2. This
+ *      is the frequency-domain form of x + j*Hilbert(x), which is the whole point - with only positive
+ *      frequencies left, a translation by `hz` is just a rotation, with no negative-frequency image to
+ *      fold back on top of the result.
+ *   3. apply a FRACTIONAL bin shift, not an integer one: split hz into whole bins m and a fractional
+ *      part fr, move the analytic bins by m with wraparound, then multiply each by exp(+j*2*pi*fr*k/N).
+ *      Handling only the integer part was the first version's second mistake - it quantised the shift to
+ *      0.73 Hz bins.
+ *   4. inverse transform and take the real part, times 2. The analytic signal has no negative-frequency
+ *      half, so the inverse transform is a full complex result whose REAL part is the shifted signal;
+ *      the factor 2 restores the amplitude that step 2's single-sided spectrum represents.
+ *
+ * This is deliberately an independent implementation path from the Hilbert-FIR one in
+ * tests/degradation-matrix.js: it uses the FFT, a fractional-bin rotation and a different scaling law,
+ * so agreement between the two is meaningful evidence rather than a tautology.
+ */
 function referenceShift(x, hz) {
   const N = x.length;
-  const re = new Float32Array(N), out = new Float32Array(2 * N);
-  for (let i = 0; i < N; i++) re[i] = x[i];
-  new globalThis.FFT(N).realTransform(out, re);
-  // positive-frequency part doubled, negative zeroed - the standard analytic signal - then rotate
+  const fft = new globalThis.FFT(N);
+  const inp = new Float32Array(N), spec = new Float32Array(2 * N);
+  for (let i = 0; i < N; i++) inp[i] = x[i];
+  fft.realTransform(spec, inp);
+
   const half = N / 2;
-  const R = new Float64Array(N), I = new Float64Array(N);
-  for (let k = 0; k <= half; k++) {
-    const a = out[2 * k], b = out[2 * k + 1];
-    if (k === 0 || k === half) { R[k] = a; I[k] = b; }
-    else { R[k] = 2 * a; I[k] = 2 * b; }
-  }
-  const w = 2 * Math.PI * hz / SR;
-  for (let k = 0; k <= half; k++) {
+  const binHz = SR / N;
+  const m = Math.round(hz / binHz);          // whole bins
+  const fr = (hz - m * binHz) / binHz;       // fractional remainder, |fr| <= 0.5
+  const w = 2 * Math.PI * fr / N;            // fractional-shift phase ramp per bin
+
+  const re = new Float64Array(N), im = new Float64Array(N);
+  for (let k = 1; k < half; k++) {
+    /*
+     * The analytic spectrum keeps only the positive bins, and a real signal splits each component's
+     * amplitude between bin k and bin N-k. Discarding the negative side therefore halves the amplitude,
+     * so the SAME factor 2 has to come back here. Applying it in both places (the first version) gave an
+     * amplitude ratio of 2.0000; applying it in neither (the second) gave 0.5000. Once, here, is right.
+     */
+    const a = spec[2 * k], b = spec[2 * k + 1];
+    // fractional rotation
     const c = Math.cos(w * k), s = Math.sin(w * k);
-    const nr = R[k] * c - I[k] * s, ni = R[k] * s + I[k] * c;
-    R[k] = nr; I[k] = ni;
+    const nr = a * c - b * s, ni = a * s + b * c;
+    // whole-bin translation with wraparound
+    const dest = ((k + m) % N + N) % N;
+    re[dest] += 2 * nr; im[dest] += 2 * ni;
   }
-  // Hermitian completion for a real output
-  for (let k = 1; k < half; k++) { R[N - k] = R[k]; I[N - k] = -I[k]; }
-  const inRe = new Float32Array(N), inIm = new Float32Array(N);
-  for (let k = 0; k < N; k++) { inRe[k] = R[k]; inIm[k] = I[k]; }
-  const o2 = new Float32Array(2 * N);
-  for (let k = 0; k < N; k++) { o2[2 * k] = inRe[k]; o2[2 * k + 1] = inIm[k]; }
-  const back = new Float32Array(2 * N);
-  new globalThis.FFT(N).inverseTransform(back, o2);
+  const cin = new Float32Array(2 * N), cout = new Float32Array(2 * N);
+  for (let k = 0; k < N; k++) { cin[2 * k] = re[k]; cin[2 * k + 1] = im[k]; }
+  fft.inverseTransform(cout, cin);          // library divides by N
   const y = new Float32Array(N);
-  for (let i = 0; i < N; i++) y[i] = back[2 * i];
+  for (let i = 0; i < N; i++) y[i] = cout[2 * i];
   return y;
 }
 
-/** Dominant frequency in a window, with a coarse+fine search. */
+/**
+ * Dominant frequency in a band, from a Hann-windowed FFT.
+ *
+ * The window is not optional here: an unwindowed segment leaks a strong tone across dozens of bins, and
+ * when the band is only +/-200 Hz wide that leakage can outrank the true peak - which made an early
+ * version of this file report a 1.07 Hz error on a shift that was exact.
+ */
 function dom(x, off, len, lo, hi) {
   const N = 32768;
   const re = new Float32Array(N), out = new Float32Array(2 * N);
-  for (let i = 0; i < N; i++) re[i] = (x[off + i] || 0) * (0.5 - 0.5 * Math.cos(2 * Math.PI * i / (N - 1)));
+  const use = Math.min(len, N);
+  for (let i = 0; i < N; i++) {
+    const v = i < use ? (x[off + i] || 0) : 0;
+    re[i] = v * 0.5 * (1 - Math.cos(2 * Math.PI * i / (use - 1)));
+  }
   new globalThis.FFT(N).realTransform(out, re);
   const k0 = Math.max(1, Math.ceil(lo * N / SR)), k1 = Math.min(N / 2 - 1, Math.floor(hi * N / SR));
   let best = -1, bk = k0;
@@ -71,22 +123,61 @@ function dom(x, off, len, lo, hi) {
     const m = Math.hypot(out[2 * k], out[2 * k + 1]);
     if (m > best) { best = m; bk = k; }
   }
-  return bk * SR / N;
+  // quadratic interpolation: the true peak rarely lands on a bin
+  const y0 = Math.hypot(out[2 * (bk - 1)], out[2 * (bk - 1) + 1]);
+  const y1 = Math.hypot(out[2 * bk], out[2 * bk + 1]);
+  const y2 = Math.hypot(out[2 * (bk + 1)], out[2 * (bk + 1) + 1]);
+  const den = y0 - 2 * y1 + y2;
+  const d = den === 0 ? 0 : 0.5 * (y0 - y2) / den;
+  return (bk + d) * SR / N;
 }
 
 console.log('=== 频移实现校验（与 FFT 参考实现对拍）===\n');
+
+/*
+ * [0] VALIDATE THE REFERENCE BEFORE TRUSTING IT.
+ *
+ * This is the step the first version of this file was missing, and skipping it is how a reference that
+ * shifted nothing survived long enough to produce a wrong "our model is fine" conclusion. A pure tone of
+ * known frequency goes in; the output frequency and amplitude are measured against the requested shift.
+ * If this section fails, nothing below it means anything.
+ */
+{
+  console.log('[0] 参考实现自校验（纯音，真值已知）');
+  const N = 65536;
+  const f0 = 1500;
+  const x = new Float32Array(N);
+  for (let i = 0; i < N; i++) x[i] = 0.4 * Math.sin(2 * Math.PI * f0 * i / SR);
+  let bad = 0;
+  console.log('    施加(hz)   读数(Hz)   频率误差(Hz)   幅度比   长度');
+  for (const hz of [0, 10, -10, 37.5, -37.5, 100, -100]) {
+    const y = referenceShift(x, hz);
+    const f = dom(y, 0, N, f0 + hz - 200, f0 + hz + 200);
+    let pk = 0;
+    for (let i = 4000; i < N - 4000; i++) if (Math.abs(y[i]) > pk) pk = Math.abs(y[i]);
+    const okF = Math.abs(f - (f0 + hz)) < 1.0;
+    const okA = Math.abs(pk - 0.4) < 0.01;
+    const okL = y.length === N;
+    if (!okF || !okA || !okL) bad++;
+    console.log('    ' + String(hz).padStart(8) + '   ' + f.toFixed(2).padStart(9) + '   ' +
+      (f - f0 - hz).toFixed(3).padStart(12) + '   ' + (pk / 0.4).toFixed(4).padStart(7) +
+      '   ' + (okL ? 'OK' : 'BAD') + (okF ? '' : '  频率不符') + (okA ? '' : '  幅度不符'));
+  }
+  console.log('    ' + (bad === 0 ? '参考实现自校验通过 ✓' : '参考实现自校验失败 ✗ —— 下面的对拍结论无效'));
+  if (bad !== 0) { process.exitCode = 1; return; }
+}
 
 // ---------------------------------------------------------------- synthetic multitrack
 {
   const N = 65536;
   const x = new Float32Array(N);
-  // three tones at non-harmonically-related frequencies, plus a DC-ish very low tone
+  // three tones at non-harmonically-related frequencies
   for (let i = 0; i < N; i++) {
     x[i] = 0.2 * Math.sin(2 * Math.PI * 1200 * i / SR)
          + 0.2 * Math.sin(2 * Math.PI * 1733 * i / SR)
          + 0.2 * Math.sin(2 * Math.PI * 2291 * i / SR);
   }
-  console.log('[1] 三音信号（1200 / 1733 / 2291 Hz）');
+  console.log('\n[1] 三音信号（1200 / 1733 / 2291 Hz）');
   console.log('    hz    我们-1200  我们-1733  我们-2291  |  参考-1200  参考-1733  参考-2291  |  差异(dB)');
   for (const hz of [0, 20, -20, 50, -50, 200, -200]) {
     const a = OURS(x, hz), b = referenceShift(x, hz);

@@ -216,6 +216,18 @@ const T7 = (() => {
 })();
 
 // ==================================================================== 表 8
+/*
+ * `m8` reads a value out of the same object table 8 is built from, so the prose in 5.7 and the table
+ * cannot disagree. They DID disagree: 5.7 carried a hardcoded 31.95 dB for the Martin M1 control while
+ * table 8 reported 32.02 dB from pd-modes.json, and the mismatch only surfaced when the table was
+ * regenerated. Deriving both from one source removes that class of defect rather than fixing the one
+ * instance of it.
+ */
+const m8 = (k) => {
+  const v = ((pd.measured || {})[k] || {}).psnr;
+  return v == null ? '—' : num(v);
+};
+
 const T8 = (() => {
   const m = pd.measured || {};
   const rows = [];
@@ -238,12 +250,13 @@ const T9 = tbl(9, '9 已知限制汇总',
   ['编号', '限制', '实测依据', '影响'], [
     ['L1', '标定头检测在两重损伤叠加时失败', '三段样本（单边带加工频、单边带加邻道、房间混响加带倾斜）全部终止于标定头搜索；将接受阈值放宽 3.5 倍仍无候选', '这三类音频完全无法解码'],
     ['L2', 'PD 族缺少真实录音验证', '检索六个公开仓库仅得到 Martin M1 样本；规格文档不可获取', 'PD 解码的正确性仅有自洽往返支撑，未与标准逐项核对'],
-    ['L3', '边带载荷容量仅数百字节', '块长 32 时载荷 215 B，扣除图片头后图象数据 200 B', '秘密图只能是 20×20、4 位每像素的灰度缩略图'],
+    ['L3', '边带载荷预算 200 字节', '图象数据预算为 <code>dataBudget</code> 默认值 200 B（块长 32 时载荷 215 B，扣除图片头后 200 B）', '秘密图只能是缩略图；该功能已冻结，隐写改用 RobustStego'],
     ['L4', '交织深度受码字数限制', '块长 32 时载波仅容一个 255 字节码字，端到端深度为 1 至 2', '对连续突发的分散能力有限'],
     ['L5', '严重档超出适用范围', '块长自 16 扫描至 128，帧成功率恒为零，字节正确率约 24.7%', '该档不作为可用工作点'],
     ['L6', '频偏与时钟校正在真实录音上无净收益', '二十六段样本平均 PSNR 变化为 −0.01 dB；交叉点位于 0.02% 至 0.1% 之间', '该机制属于对未出现失效模式的保险'],
     ['L7', 'σ_HF 可被模糊压低', '干净样本滤波后 σ_HF 由 10.87 降至 7.00，同期 PSNR 下降', '该指标不可单独用作质量判据'],
-    ['L8', 'PD 解码耗时较高', 'PD120 单次解码约 46 s，Martin M1 约 7 s', '交互式使用受限']
+    ['L8', 'PD 解码耗时较高', 'PD120 单次解码约 46 s，Martin M1 约 7 s', '交互式使用受限'],
+    ['L9', '频偏响应对正负号不对称', '+50 Hz 为 31.54 dB 而 −50 Hz 为 17.32 dB；根因见 6.4 节，为图像搜索带下界与 1500 Hz 消隐音重叠，非符号相关缺陷', '消除不对称需牺牲 14.7 dB 合成基线，故未修复；护栏已实现但出厂关闭']
   ]);
 
 // ==================================================================== 表 10
@@ -275,10 +288,104 @@ const FIG4 = inlineFigure('fig4-afc-offset.svg');
 const FIG5 = inlineFigure('fig5-clock-recovery.svg');
 const FIG7 = inlineFigure('fig7-interleave-burst.svg');
 const FIG10 = inlineFigure('fig10-b-sweep.svg');
+
+/*
+ * ==================================================================== 抗干扰能力实测（phase 52）
+ *
+ * §5.9 is built from three artifacts produced by this round's tooling, and NOTHING here is typed by hand:
+ *
+ *   tests/degradation-matrix-results.json   the 6-dimension x 4-6 rung matrix (48 rows), 25 dB threshold
+ *   tests/diag-quality/degradation-curves.svg   the curve chart (8 series, threshold crossings marked)
+ *   tests/diag-quality/degradation-comparison.png   the side-by-side figure
+ *
+ * A missing artifact is a HARD FAILURE rather than a silently empty section: a report that quietly drops
+ * its own evidence chapter is worse than one that refuses to build, because the omission is invisible in
+ * the output. Same reasoning as inlineFigure() above.
+ */
+const DEMO_DIR = path.join(ROOT, 'tests', 'diag-quality');
+const MATRIX_RESULTS = path.join(ROOT, 'tests', 'degradation-matrix-results.json');
+const CURVE_SVG = path.join(DEMO_DIR, 'degradation-curves.svg');
+const COMPARISON_PNG = path.join(DEMO_DIR, 'degradation-comparison.png');
+for (const f of [MATRIX_RESULTS, CURVE_SVG, COMPARISON_PNG]) {
+  if (!fs.existsSync(f)) {
+    throw new Error('缺少 ' + path.relative(ROOT, f) +
+      ' —— 先跑 node tests/degradation-matrix.js、node scripts/gen-degradation-curve.js、' +
+      'node tests/gen-degradation-figure.js');
+  }
+}
+const MATRIX = JSON.parse(fs.readFileSync(MATRIX_RESULTS, 'utf8'));
+const CURVES = JSON.parse(fs.readFileSync(path.join(DEMO_DIR, 'degradation-curves.json'), 'utf8'));
+const CURVE_FIG = fs.readFileSync(CURVE_SVG, 'utf8');
+const COMPARISON_FIG = '<img alt="六种退化下的解码结果并排对比" style="width:100%;height:auto;border-radius:6px" src="data:image/png;base64,' +
+  fs.readFileSync(COMPARISON_PNG).toString('base64') + '">';
+
+/** The matrix row for an exact parameter label, so a table cell can never quote a number that is not there. */
+const rowOf = (dim, param) => MATRIX.rows.find((r) => r.dim === dim && r.param === param) || null;
+const dbOf = (dim, param) => { const r = rowOf(dim, param); return r && r.psnr != null ? r.psnr.toFixed(2) : '失败'; };
 const FIG11 = inlineFigure('fig11-content-dependence.svg');
 const FIG12 = inlineFigure('fig12-real-audio.svg');
 const FIG13 = inlineFigure('fig13-postprocess.svg');
-const fig = (svg, n, caption) => `<figure class="figure" id="fig${n}">\n${svg}\n<figcaption class="caption">图 ${n}：${caption}</figcaption>\n</figure>`;
+/*
+ * `fig()` is the single place that knows a figure's NUMBER, so it also enforces that number inside the SVG.
+ *
+ * WHY THIS IS NOT COSMETIC. The schematic figures returned by tech-html-parts.js carry a hardcoded
+ * <title>图 N ...</title>, written when their authors assumed a particular ordering. Three of them no longer
+ * match where they actually appear: F.fig4 says "图 4" but is rendered as figure 6, F.fig5 says "图 5" but is
+ * figure 8, and F.fig6 says "图 6" but is figure 9. That produced duplicate <title> elements in the document
+ * and - because <title> inside an SVG with role="img" IS the accessible name - made three of the thirteen
+ * figures announce themselves to assistive technology under the wrong number and a caption that belongs to
+ * another figure.
+ *
+ * Rewriting the title here rather than editing three call sites means a future reordering cannot reintroduce
+ * the mismatch, and a missing <title> is a hard failure instead of a silently untitled figure.
+ */
+const fig = (svg, n, caption) => {
+  const title = '图 ' + n + ' ' + String(caption).replace(/^图\s*\d+\s*[:：]?\s*/, '');
+  const capId = 'figcap' + n;
+  const figcap = `<figcaption class="caption" id="${capId}">图 ${n}：${caption}</figcaption>`;
+
+  /*
+   * Two kinds of body, and they need DIFFERENT accessibility handling:
+   *
+   *  - an inline SVG: its <title> is the accessible name, so the number goes there. The title is REWRITTEN
+   *    from the figure's real number, because the schematic figures carry hardcoded titles that no longer
+   *    match where they appear (F.fig4 says 图 4 but is rendered as figure 6, F.fig5 says 图 5 but is
+   *    figure 8, F.fig6 says 图 6 but is figure 9), which produced duplicate titles and made three figures
+   *    announce themselves under the wrong number and another figure's caption.
+   *
+   *  - an <img> (the comparison figure is a raster PNG): a <title> child does nothing there, so the figure
+   *    gets role="group" and aria-labelledby pointing at the CAPTION. That is the correct pattern and it is
+   *    also the only one available - which is why the branch exists rather than one rule for both.
+   *
+   * A body that is neither is a hard error: silently emitting an unlabelled figure is how the mismatch above
+   * survived unnoticed in the first place.
+   */
+  if (/<svg[\s>]/.test(svg)) {
+    if (!/<title>[\s\S]*?<\/title>/.test(svg)) {
+      throw new Error('图 ' + n + ' 的内联 SVG 缺少 <title>，无法保证无障碍名称正确');
+    }
+    const body = svg.replace(/<title>[\s\S]*?<\/title>/, '<title>' + esc(title) + '</title>');
+    return `<figure class="figure" id="fig${n}">\n${body}\n${figcap}\n</figure>`;
+  }
+  if (/<img[\s>]/.test(svg)) {
+    // the img carries its own alt; the figure is named by the caption
+    const body = svg.replace('<img', '<img aria-labelledby="' + capId + '"');
+    return `<figure class="figure" id="fig${n}" role="group" aria-labelledby="${capId}">\n${body}\n${figcap}\n</figure>`;
+  }
+  throw new Error('图 ' + n + ' 的内容既不是内联 SVG 也不是 <img>，无法确定无障碍名称来源');
+};
+
+/*
+ * The two figures §5.9 adds, emitted through the same `fig()` helper as everything else and numbered 14 and
+ * 15 because the report already uses 1..13.
+ *
+ * Declared HERE, after `fig`, and not next to the file reads above: `const` is not hoisted, so building them
+ * earlier threw "Cannot access 'fig' before initialization". Without these the chapter's prose named 图 14
+ * and 图 15 while neither number existed in the document, which the numbering check reports as a dangling
+ * reference.
+ */
+const FIG14 = fig(CURVE_FIG, 14, '六类退化的解码 PSNR 曲线。横轴为各维度在自身档位序列中的归一化位置（六维单位不相通，故不共用实轴），纵轴为与已知原图比较的 PSNR。绿色虚线与上方浅色区为 25 dB 可用阈值，圆圈标出各序列跌破阈值的位置，由相邻两点线性插值得到。数据来自 tests/degradation-matrix-results.json。');
+const FIG15 = fig(COMPARISON_FIG, 15, '六类退化下的解码结果与真值并排对比。左起第一格为合成测试图真值，其余为各维度接近可用极限时的一档；图中标注的 PSNR 由矩阵结果直接读取。');
 
 const abstract = `SSTV（慢扫描电视）以模拟频率调制在窄带语音信道内传送静止图象，其接收质量在真实环境中受多重退化共同限制。` +
   `本文研究在此类退化信道下尽可能完整地恢复图象的方法，并给出一个可离线运行、无外部依赖的解码实现。` +
@@ -395,10 +502,41 @@ ${fig(FIG12, 12, '真实音频解码结果，按损伤类型分组。纵轴为�
 ${T7}
 ${fig(FIG13, 13, '后处理的双向影响。横轴为输入图象的实测噪声水平，纵轴为峰值信噪比变化；均值曲线为六种滤波的平均，最优曲线取其中最佳者。干净样本落在零线以下。')}
 <h3>5.7 PD 族往返测试</h3>
-<p>PD120 与 PD180 的往返测试结果列于表 8，其中 PD120 对合成细节图为 32.46 dB、对彩色色条图为 28.49 dB，PD180 为 32.62 dB，六个色条全部重建为正确色相。作为对照，Martin M1 在同一测试下为 31.95 dB，确认逐行同步族未受改动影响。窗因子对往返质量的影响见表 8 注与 4.7 节。</p>
+<p>PD120 与 PD180 的往返测试结果列于表 8，其中 PD120 对合成细节图为 ${m8('pd120Ramp')} dB、对彩色色条图为 ${m8('pd120Colour')} dB，PD180 为 ${m8('pd180')} dB，六个色条全部重建为正确色相。作为对照，Martin M1 在同一测试下为 ${m8('m1Control')} dB，确认逐行同步族未受改动影响。窗因子对往返质量的影响见表 8 注与 4.7 节。</p>
 ${T8}
 <h3>5.8 消融实验</h3>
 <p>对三段失败样本所做的单因子消融显示，每一种退化单独施加时均可正确解码，而两两组合则全部失败，且将接受阈值放宽 3.5 倍仍无任何候选通过。该结果排除了判定门限偏紧这一解释，指向参考模式本身被破坏，其讨论见 6.3 节。</p>
+<h3>5.9 抗干扰能力实测（六维退化矩阵）</h3>
+<p>前几节的实验各自检验一种机制，缺少一张统一的“这个解码器到底能扛多少”的图。本节补齐这一项：固定一张合成测试图（色块、灰阶渐变与约 16 像素周期的棋盘细节），以 ${MATRIX.modeName} 合成 ${MATRIX.control.duration.toFixed(1)} 秒音频（采样率 ${MATRIX.sampleRate} Hz），对同一段音频逐一施加六类退化，每档重新解码并与已知原图逐像素比较。矩阵共 ${MATRIX.rows.length} 行，全部结果由 <code>tests/degradation-matrix.js</code> 生成，本节表格与曲线均直接读取其输出，无手抄数字。</p>
+<p>判据为 25 dB：低于此值即认为图像已不可用。该阈值取自同一脚本对每行的自动判定，不是本节另立的标准。需要说明的是，PSNR 与内容强相关——同一退化下细节丰富的图比平坦图得分低——因此表中的绝对值只在同一张测试图内部可比，这一点在 4.2 节已作讨论。</p>
+${FIG14}
+<p>图 14 为六类退化的解码 PSNR 曲线。横轴是各维度在自身档位序列中的归一化位置：六个维度的单位并不相通（“20 dB 信噪比”与“RT60 0.30 s”无法共用一根实轴），因此曲线只表达“在该维度的可用范围内走到哪一步”，每点的实际参数标于刻度。曲线上的圆圈标记该维度跌破 25 dB 的位置，由相邻两点线性插值得到。</p>
+<p>各维度的临界参数汇总于表 11：</p>
+${tbl(11, '11 六类退化的临界参数（' + MATRIX.modeName + '，合成测试图，判据 25 dB）',
+  ['退化维度', '仍可用', '已不可用', '临界处 PSNR', '实测依据'],
+  [
+    ['加性噪声（AWGN）', '20 dB', '15 dB', dbOf('AWGN', 'SNR 20 dB') + ' → ' + dbOf('AWGN', 'SNR 15 dB'),
+      '10 dB 时降至 ' + dbOf('AWGN', 'SNR 10 dB') + ' dB，噪声在图上表现为色度带'],
+    ['硬削波', '1.5×', '2×', dbOf('削波', '1.5×') + ' → ' + dbOf('削波', '2×'),
+      '8× 仍有 ' + dbOf('削波', '8×') + ' dB，与调频信号信息载于瞬时频率、削波保留过零点一致'],
+    ['频率失谐（正向）', '+50 Hz', '+100 Hz', dbOf('频率偏移', '+50 Hz') + ' → ' + dbOf('频率偏移', '+100 Hz'),
+      '正向容忍度很高'],
+    ['频率失谐（负向）', '0 Hz', '−5 Hz', dbOf('频率偏移', '+0 Hz') + ' → ' + dbOf('频率偏移', '-5 Hz'),
+      '负向从第一档起即跌破，根因见 6.4 节'],
+    ['采样率失配', '0 %', '0.05 %', dbOf('采样率失配', '0 %') + ' → ' + dbOf('采样率失配', '0.05 %'),
+      '0.2 % 时 ' + dbOf('采样率失配', '0.2 %') + ' dB，2 % 完全解不出'],
+    ['声学路径（混响）', '低于阈值', 'RT60 0.20 s', '—',
+      '实测 RT60 0.20 s 即 ' + dbOf('声学路径', 'RT60 0.20 s') + ' dB，0.60 s 起无法解码'],
+    ['组合退化', '低于阈值', '全部档位', '—',
+      '最轻的一档（RT60 0.3 + 10 Hz 失谐）即 ' + dbOf('组合退化', '灯下干净（RT60 0.3 + +10 Hz 失谐）') + ' dB']
+  ],
+  '注：同一维度的“仍可用/已不可用”两列给出跨越 25 dB 的相邻档位；负向频偏一行的“仍可用”为 0 Hz，' +
+  '即该方向没有任何非零档位满足判据。声学与组合两行在最低档位即低于阈值，故第一列填“低于阈值”。' +
+  '数据来自 tests/degradation-matrix-results.json。')}
+<p>三项结论值得单独指出。第一，频率失谐的响应左右不对称：正向 +50 Hz 仍有 ${dbOf('频率偏移', '+50 Hz')} dB，而负向 −30 Hz 只有 ${dbOf('频率偏移', '-30 Hz')} dB。这一不对称在第 6.4 节被定位到图像搜索带下界与 1500 Hz 消隐音重叠，并非符号相关的实现缺陷。第二，最脆弱的一环是声学路径：实测 RT60 0.20 s 即降到 ${dbOf('声学路径', 'RT60 0.20 s')} dB，比任何同等“听感”损伤都严重。原因是混响破坏的是标定头那四段稳态音的相位一致性，而解码的第一步正是靠这一模式识别起点。第三，组合退化几乎总是致命：单独施加时仍可解码的两三种损伤叠加后，没有任何一档达到判据。</p>
+<p>图 15 把六类退化的解码结果与真值并排列出，使读者可以核对表中的数字与图像的观感是否一致——例如 ${dbOf('频率偏移', '+50 Hz')} dB 的一格确实只是轻微色度偏移，而 ${dbOf('频率偏移', '-30 Hz')} dB 的一格已经出现明显的横向撕裂与色带。</p>
+${FIG15}
+<p>最后说明本图未纳入的一项比较。本文未在图中绘制 Robot36 等其它解码器的曲线，原因是没有它们的逐维度实测数据：以估算曲线与实测曲线并列，会把一个未经测量的序列放进与被测量数据相同的视觉语言里。项目确实持有的一项对照是同一段真机录音的解码截图（见 README“实测结果”一节），它是单一工况的并排比较，而非逐维度曲线，因此以图像形式给出而不进入本图。</p>
 </section>`);
 
 sections.push(`<section id="s6">
@@ -409,6 +547,39 @@ sections.push(`<section id="s6">
 <p>现实化损伤套件虽以真实录音为源，其参数仍由模型给定，与真实退化存在差距。差异尤其体现在三个方面：真实衰退落的深度与持续时间分布缺乏先验；扬声器与麦克风链路的非线性未被建模；录音取景的随机性仅以两种情形代表。因此本文把真实录音与现实化合成分栏报告，未将二者合并统计。</p>
 <h3>6.3 失败根因</h3>
 <p>失败集中于标定头搜索，其判定依赖四段已知音调在时长与频率上的相互一致。单因子施加时每种退化仅消耗部分裕度，两两叠加后一致性条件不再满足。放宽阈值无法恢复候选，说明参考模式已被破坏而非门限偏紧，可能的机制包括带外能量抬高了检测噪声底，以及混响使 300 ms 引导音的相位结构发生弥散。据此，后续改进方向应为对带外能量的自适应抑制，或改用不依赖引导音模式的同步音周期检测。</p>
+<h3>6.4 频偏响应的不对称性及其根因</h3>
+<p>退化矩阵显示频偏响应并不对称：正向 +5 至 +50 Hz 的往返信噪比保持在 30.40 至 31.54 dB，而 −5 至 −50 Hz 依次降至 29.81、27.18、21.92 与 17.32 dB。该不对称曾被怀疑为符号相关的实现缺陷，但六项候选机制经逐项测量后均被排除：损伤模型经过自校验的参考实现核对；原始轴上的同步检测判定在两侧均无越界；逐行锁定在两侧走入相同分支；标定斜率无符号相关偏置；损失在三个通道与三个扫描区段内均匀分布；锁定残差与时钟尺度两侧一致。</p>
+<p>引入逐像素频率审计后，根因得以定位。该审计记录每个像素被读出的原始频率、标定后频率与灰度值。在平坦灰场上，同一灰度的每个像素应发出相同音调，因此纯频偏只能使原始频率分布整体平移而形状不变。实测表明这一条件并不成立，且偏离程度与频偏的符号相关：</p>
+${tbl(12, '12 图像搜索带下界与估计器离散度的关系（平坦灰场，真值已知）',
+  ['频偏', '带下界', '消隐音距下界', '原始频率读数标准差', '灰度标准差'],
+  [['+50 Hz', '1350 Hz', '150 Hz', '24.19 Hz', '7.71'],
+   ['+20 Hz', '1320 Hz', '180 Hz', '8.45 Hz', '2.61'],
+   ['0', '1300 Hz', '200 Hz', '25.16 Hz', '7.55'],
+   ['−20 Hz', '1279 Hz', '221 Hz', '26.81 Hz', '7.48'],
+   ['−50 Hz', '1250 Hz', '250 Hz', '50.16 Hz', '14.06']],
+  '注：图像搜索带下界为 a(1500−200)+b。消隐音（porch）位于 1500 Hz，与扫描的最暗合法电平重合。' +
+  '数据来自 tests/diagnose-pixel-audit.js 与 tests/diag-quality/pixel-audit.json。')}
+<p>规律与符号无关，而与下界位置有关：下界为 1320 Hz 时离散度最小，距消隐音越近则越大，与 1200 Hz 同步音的距离并非决定因素。原因在于扫描的最暗合法电平与消隐音同为 1500 Hz，故“向下搜索至最暗端”与“搜索到消隐音上”是同一操作；消隐音是比扫描内容高约 20 dB 的稳态音，而像素分析窗仅含约 6 个 1200 Hz 周期，其频谱泄漏足以在带内盖过扫描音，估计器因而报出不属于该像素的频率。</p>
+<p>据此可实现一项直接修复：将带下界抬至消隐音之上。该护栏已实现并参数化，但其代价经扫描确定，且代价过高，故出厂关闭：</p>
+${tbl(13, '13 图像带下界护栏的代价（护栏 G 表示下界抬至 1500+G Hz）',
+  ['护栏 G', '±50 Hz 离散度之比', '合成细节图往返 PSNR', '相对基线变化'],
+  [['0（现状）', '2.07', '30.50 dB', '—'],
+   ['50 Hz', '1.53', '28.97 dB', '−1.53 dB'],
+   ['100 Hz', '1.39', '26.17 dB', '−4.33 dB'],
+   ['150 Hz', '1.26', '23.05 dB', '−7.45 dB'],
+   ['200 Hz', '1.15', '20.24 dB', '−10.26 dB'],
+   ['300 Hz', '1.02', '15.77 dB', '−14.73 dB']],
+  '注：护栏可同时改善真机声学录音的行间相关（0.668 → 0.750），但完全消除不对称需牺牲 14.7 dB 合成基线，' +
+  '违反保真度约束，故不作为默认工作点。数据来自 tests/sweep-band-guard.js 与 tests/diag-quality/band-guard-sweep.json。')}
+<p>该结果是一项否定性结论：频偏不对称的根因已确定，但在不降低合成基线的前提下无法修复，因为接收侧无法区分“最暗像素”与“消隐段”这两个在规格中本就同频的区间。若要真正消除，需要在编码侧为图像带下界留出保护间隔，或改变消隐音频率，二者均超出本解码器的范围。</p>
+<h3>6.5 真机声学路径的量化</h3>
+<p>本文此前的声学结论建立在一段被误分类的录音之上。该录音以 <code>.wav</code> 为扩展名而实为 MP3，且被当作线路或无线电录音处理；经声学指纹核对，它实际是电脑扬声器外放、手机在 20 至 50 cm 处录制的真机声学数据，并与仓库中另一份 <code>.m4a.mp3</code> 逐字节相同。因此该项目的声学工作是建立在真机数据上的，此前的归类有误。</p>
+<p>该录音的实测显示退化机制并非混响主导：解码器以 256 行全部锁定、零丢锁完成解码，标定偏移仅 −0.29 Hz，时钟尺度偏差 5.8×10⁻⁵。合成混响模型在 RT60 为 0.30 s 时会同时破坏这些量（往返信噪比降至 17.79 dB，同步抖动 12 采样），真机并未发生。主导项是房间噪声底，其平坦区噪声估计为 15.16，而干净解码的参考值为 5.4。</p>
+<p>针对该噪声底，本文采用经门控的离群像素恢复：以像素自身 3×3 中值为基准，将偏离超过 k 倍噪声估计的样本判为被捕获像素并替换。该操作在真机录音上使高频残差由 24.03 降至 13.21、色度噪声由 57.2 降至 34.4、行间相关由 0.6855 升至 0.8581。由于孤立的噪声尖峰与单像素的真实细节在无参考时不可区分，该操作对细节丰富的图象具有破坏性（合成对照损失 3.53 dB），故设置第二道门限使其仅在高噪声输入上启用，两道门限之间留有实测确定的间隔。</p>
+<p>反卷积路径已被证明无效：以真实房间冲激响应作反卷积的收益上界仅 0.08 dB。进一步测量表明，混响几乎不改变估计器的方差（平坦场上由 7.40 升至 8.18 灰度级），而是使极值崩塌（134 升至 224 与 254，中位绝对偏差由 0 升至 14）。因此该路径的残余误差集中在少数被完全捕获的像素上，而非均匀的精度损失，这也解释了为何基于滤波的方法收效甚微而离群恢复有效。</p>
+<h3>6.6 录音分析工具的一项纠正</h3>
+<p>本文用于量化真机录音的分析工具曾给出自相矛盾的结论：标定头音调表报告四段探针均未测到目标音，而同一文件的解码器报告 256 行全部锁定。该矛盾源于工具的起点估计采用宽带包络阈值，而该录音的振幅是渐升的，且文件包含约 106 秒的音乐与房间噪声，真实标定头位于 t≈106.3 s。修正后的估计器在整个文件范围内搜索持续时间足够的 1900 Hz 引导音并按强度筛选，其内建自校验要求在已知真值的合成前导上定位准确，否则拒绝在未知录音上报告任何数字。</p>
+<p>修正后该工具在真机录音上测得的引导音位置与解码器自报的图象起点相差 0.9 s，与规格几何相符，且引导音比其竞争音高 53 dB。但其余三段标定头音调低约 47 dB，故该表仍被判为不可用——这一结论现在能够区分“起点错误”与“标定头本身退化”两种情形，而修正前二者表现为同一种失败。</p>
 </section>`);
 
 sections.push(`<section id="s7">

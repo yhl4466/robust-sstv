@@ -1,0 +1,15 @@
+{
+  "imageStart": 5133600,
+  "imageStartSeconds": 106.95,
+  "scale": 1.0001078190846757,
+  "offsetHz": -0.2904316432861833,
+  "leaderFreqHz": 1899.9144246175977,
+  "headerScale": 0.9898123864502083,
+  "headerOffsetHz": 19.270890362201953,
+  "observations": 256,
+  "freeRunTotal": 0,
+  "expectedHeaderWindow": [
+    105.88178,
+    106.31
+  ]
+}

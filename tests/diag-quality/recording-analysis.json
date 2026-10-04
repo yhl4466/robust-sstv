@@ -1,0 +1,104 @@
+{
+  "selftest": {
+    "ok": true,
+    "problems": [],
+    "start": 0.245,
+    "truthLead": 0.25,
+    "rows": [
+      {
+        "freq": 1200,
+        "wantRms": 0.282842712474619,
+        "gotRms": 0.2824827350921578,
+        "wrongRms": 0.00021057131554227674,
+        "windowRms": 0.2825417362003267,
+        "ratioDb": 62.55185398337218,
+        "winMs": 240,
+        "short": false
+      },
+      {
+        "freq": 1900,
+        "wantRms": 0.282842712474619,
+        "gotRms": 0.2827112950818878,
+        "wrongRms": 0.00019626687678012608,
+        "windowRms": 0.2827730147936103,
+        "ratioDb": 63.16992297065965,
+        "winMs": 240,
+        "short": false
+      },
+      {
+        "freq": 1200,
+        "wantRms": 0.282842712474619,
+        "gotRms": 0.28148269532793074,
+        "wrongRms": 0.004142145868324052,
+        "windowRms": 0.28204534972344203,
+        "ratioDb": 36.64452624323428,
+        "winMs": 24,
+        "short": true
+      },
+      {
+        "freq": 1900,
+        "wantRms": 0.282842712474619,
+        "gotRms": 0.2830954327020301,
+        "wrongRms": 0.00013974313302588022,
+        "windowRms": 0.2831533845120955,
+        "ratioDb": 66.13204773806015,
+        "winMs": 240,
+        "short": false
+      }
+    ],
+    "legacyStart": 0.2501,
+    "legacyOk": true,
+    "ramped": true
+  },
+  "report": {
+    "file": "tests\\diag-quality\\acoustic-real-48k-mono.wav",
+    "sampleRate": 48000,
+    "duration": 220.152,
+    "fileRms": 0.01983690046151643,
+    "leaderStart": 106.049,
+    "signalStart": 105.734,
+    "leaderStrength": 1.9733740361872445,
+    "originShiftFromSpec": -0.005,
+    "header": [
+      {
+        "label": "break 1",
+        "wantHz": 1200,
+        "toneRms": 0.00006316422223579049,
+        "otherToneRms": 0.00004587872610878418,
+        "windowRms": 0.023649761951618293,
+        "toneToWindowDb": -51.467112415833,
+        "toneToOtherDb": 2.7771960463759444
+      },
+      {
+        "label": "leader 1",
+        "wantHz": 1900,
+        "toneRms": 0.01403451023608827,
+        "otherToneRms": 0.00003038155499653005,
+        "windowRms": 0.014333350608540872,
+        "toneToWindowDb": -0.183009253622913,
+        "toneToOtherDb": 53.291745266871054
+      },
+      {
+        "label": "VIS start",
+        "wantHz": 1200,
+        "toneRms": 0.0029606935777293803,
+        "otherToneRms": 0.008119247780068088,
+        "windowRms": 0.012726749475384611,
+        "toneToWindowDb": -12.666480670494494,
+        "toneToOtherDb": -8.762446672139966
+      },
+      {
+        "label": "leader 2",
+        "wantHz": 1900,
+        "toneRms": 0.00026390115971810683,
+        "otherToneRms": 0.0007598087183138721,
+        "windowRms": 0.013090678822180683,
+        "toneToWindowDb": -33.910417378064835,
+        "toneToOtherDb": -9.185259475140837
+      }
+    ],
+    "headerReliable": false,
+    "headerOriginSuspect": false,
+    "headerNote": "起点可信，但标定头其余音退化（signalStart=105.734，修正 -5 ms）；1/4 探针有效"
+  }
+}

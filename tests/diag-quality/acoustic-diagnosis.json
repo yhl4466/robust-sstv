@@ -1,0 +1,157 @@
+{
+  "note": "kind=real is untouched; kind=realistic-synthetic is derived. Never mix them in reporting.",
+  "rows": [
+    {
+      "id": "real-npm-8k",
+      "kind": "real",
+      "group": null,
+      "label": null,
+      "sampleRate": 8000,
+      "duration": 119.7625,
+      "ok": true,
+      "message": null,
+      "mode": "Martin M1",
+      "psnr": 26.708132755843607,
+      "lock": {
+        "n": 256,
+        "freeRun": 0,
+        "mad": 0.8289110781624913,
+        "periodSamples": 3571.5669761387044
+      },
+      "image": {
+        "sigmaHF": 13.578506942554334,
+        "ratioGR": 0.817353692732014,
+        "sdL": 49.63200116209639,
+        "sdGR": 40.56689942751909
+      },
+      "clockScale": 0.9999809607432927,
+      "scale": 1.0000002866700533,
+      "offsetHz": -0.09788848929815686
+    },
+    {
+      "id": "real-colaclanth-8k",
+      "kind": "real",
+      "group": null,
+      "label": null,
+      "sampleRate": 8000,
+      "duration": 116.808,
+      "ok": true,
+      "message": null,
+      "mode": "Martin M1",
+      "psnr": null,
+      "lock": {
+        "n": 256,
+        "freeRun": 0,
+        "mad": 1.5858770599588752,
+        "periodSamples": 3571.5703171492332
+      },
+      "image": {
+        "sigmaHF": 25.764986591771226,
+        "ratioGR": 0.9378813442650203,
+        "sdL": 65.17789552832151,
+        "sdGR": 61.12913227446724
+      },
+      "clockScale": 0.999910963475986,
+      "scale": 0.9999993512239637,
+      "offsetHz": -0.09610898399546386
+    },
+    {
+      "id": "acoustic-rt03",
+      "kind": "realistic-synthetic",
+      "group": "acoustic",
+      "label": "room RT60 0.3 s + hum + mic noise",
+      "sampleRate": 8000,
+      "duration": 119.7625,
+      "ok": true,
+      "message": null,
+      "mode": "Martin M1",
+      "psnr": 15.267885531650094,
+      "lock": {
+        "n": 256,
+        "freeRun": 0,
+        "mad": 1.9020495966542512,
+        "periodSamples": 3571.5639180161365
+      },
+      "image": {
+        "sigmaHF": 24.056048569900486,
+        "ratioGR": 1.2834077924365745,
+        "sdL": 47.92660474533764,
+        "sdGR": 61.50937799519404
+      },
+      "clockScale": 0.9998409662086792,
+      "scale": 1.0000037369812576,
+      "offsetHz": -0.10456919243733864,
+      "bandDiffDb": {
+        "0-100": -11.936028151836634,
+        "100-300": 2.9715398802727577,
+        "300-1200": -0.13077752352232608,
+        "1200-1500": 2.274920010422724,
+        "1500-2300": 0.3956360560870108,
+        "2300-2700": 0.9388279896435527,
+        "2700-4000": 5.8572440146429585
+      }
+    },
+    {
+      "id": "acoustic-rt06",
+      "kind": "realistic-synthetic",
+      "group": "acoustic",
+      "label": "room RT60 0.6 s + hum + mic noise",
+      "sampleRate": 8000,
+      "duration": 119.7625,
+      "ok": true,
+      "message": null,
+      "mode": "Martin M1",
+      "psnr": 14.094437583373542,
+      "lock": {
+        "n": 256,
+        "freeRun": 0,
+        "mad": 2.561055161349941,
+        "periodSamples": 3571.542986810483
+      },
+      "image": {
+        "sigmaHF": 28.078309229798492,
+        "ratioGR": 1.4390408688566485,
+        "sdL": 47.71952893530161,
+        "sdGR": 68.6703523804864
+      },
+      "clockScale": 0.9998409662086792,
+      "scale": 1.0000066548994966,
+      "offsetHz": 0.13348229148118662,
+      "bandDiffDb": {
+        "0-100": -11.440803107293714,
+        "100-300": 6.205006412115285,
+        "300-1200": 1.1932083772805235,
+        "1200-1500": 2.050802160408315,
+        "1500-2300": 0.3657213306637601,
+        "2300-2700": 1.2494722530826081,
+        "2700-4000": 10.9793891780262
+      }
+    },
+    {
+      "id": "acoustic-band",
+      "kind": "realistic-synthetic",
+      "group": "acoustic",
+      "label": "speaker/mic band tilt + RT60 0.4",
+      "sampleRate": 8000,
+      "duration": 119.7625,
+      "ok": false,
+      "message": "未找到 SSTV 标定头（校准头）。请确认这是 SSTV 音频，且开头包含 1900/1200 Hz 引导音。（已尝试主阈值与自适应放宽阈值两轮）",
+      "mode": null,
+      "psnr": null,
+      "lock": null,
+      "image": null,
+      "clockScale": null,
+      "scale": null,
+      "offsetHz": null,
+      "bandDiffDb": {
+        "0-100": -7.98829404747255,
+        "100-300": 7.39263196067467,
+        "300-1200": 0.06878086056138244,
+        "1200-1500": 2.9607462809587357,
+        "1500-2300": 0.3414188601574219,
+        "2300-2700": -3.1836827570223,
+        "2700-4000": 7.932816119051541
+      }
+    }
+  ]
+}

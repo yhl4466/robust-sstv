@@ -1,0 +1,206 @@
+{
+  "files": {
+    "real-npm-8k": {
+      "sampleRate": 8000,
+      "signalStart": 2.515,
+      "probes": [
+        {
+          "label": "brk",
+          "want": 1200,
+          "freq": -0.00008070272383485084,
+          "snrDb": -87.32326862907854
+        },
+        {
+          "label": "ld",
+          "want": 1900,
+          "freq": -0.0012493476624013894,
+          "snrDb": -33.11341323623451
+        },
+        {
+          "label": "vis",
+          "want": 1200,
+          "freq": 1500.0000096414028,
+          "snrDb": -68.16081938224107
+        },
+        {
+          "label": "ld2",
+          "want": 1900,
+          "freq": 1499.9999885225686,
+          "snrDb": 8.494665913555009
+        }
+      ],
+      "decodeOk": true
+    },
+    "real-colaclanth-8k": {
+      "sampleRate": 8000,
+      "signalStart": 0.025,
+      "probes": [
+        {
+          "label": "brk",
+          "want": 1200,
+          "freq": 1804.6877145476724,
+          "snrDb": -48.26443444470654
+        },
+        {
+          "label": "ld",
+          "want": 1900,
+          "freq": 1503.906704499388,
+          "snrDb": -38.84300685690637
+        },
+        {
+          "label": "vis",
+          "want": 1200,
+          "freq": 2300.7795594270347,
+          "snrDb": -87.96098172375716
+        },
+        {
+          "label": "ld2",
+          "want": 1900,
+          "freq": 1902.3412996543088,
+          "snrDb": 12.614913526820342
+        }
+      ],
+      "decodeOk": true
+    },
+    "acoustic-rt03": {
+      "sampleRate": 8000,
+      "signalStart": 2.515,
+      "probes": [
+        {
+          "label": "brk",
+          "want": 1200,
+          "freq": -0.0006428329099207233,
+          "snrDb": -41.01628181084187
+        },
+        {
+          "label": "ld",
+          "want": 1900,
+          "freq": -0.0012535220567182336,
+          "snrDb": -20.98722121537554
+        },
+        {
+          "label": "vis",
+          "want": 1200,
+          "freq": 1492.188821463929,
+          "snrDb": -41.11442720302725
+        },
+        {
+          "label": "ld2",
+          "want": 1900,
+          "freq": 1499.9998816065074,
+          "snrDb": -0.8171167236300979
+        }
+      ],
+      "decodeOk": true
+    },
+    "acoustic-rt06": {
+      "sampleRate": 8000,
+      "signalStart": 2.515,
+      "probes": [
+        {
+          "label": "brk",
+          "want": 1200,
+          "freq": -0.0008663983005472618,
+          "snrDb": -34.24085798708509
+        },
+        {
+          "label": "ld",
+          "want": 1900,
+          "freq": -0.0012344303574094182,
+          "snrDb": -17.257104452932584
+        },
+        {
+          "label": "vis",
+          "want": 1200,
+          "freq": -0.0012415391012191286,
+          "snrDb": -39.83924485291572
+        },
+        {
+          "label": "ld2",
+          "want": 1900,
+          "freq": 1499.999417846953,
+          "snrDb": -1.1307631226755332
+        }
+      ],
+      "decodeOk": true
+    },
+    "acoustic-band": {
+      "sampleRate": 8000,
+      "signalStart": 2.515,
+      "probes": [
+        {
+          "label": "brk",
+          "want": 1200,
+          "freq": -0.00010338376374087089,
+          "snrDb": -41.58260937457924
+        },
+        {
+          "label": "ld",
+          "want": 1900,
+          "freq": -0.0012498164509889657,
+          "snrDb": -25.865813376474627
+        },
+        {
+          "label": "vis",
+          "want": 1200,
+          "freq": -0.0012400574349964151,
+          "snrDb": -43.74155577562496
+        },
+        {
+          "label": "ld2",
+          "want": 1900,
+          "freq": 1499.9997147373238,
+          "snrDb": -2.028576895925233
+        }
+      ],
+      "decodeOk": false
+    }
+  },
+  "snrSweep": [
+    {
+      "targetSnr": 30,
+      "measuredToneSnr": -20.98722121537554,
+      "ok": true
+    },
+    {
+      "targetSnr": 25,
+      "measuredToneSnr": -20.98722115855352,
+      "ok": true
+    },
+    {
+      "targetSnr": 20,
+      "measuredToneSnr": -20.98722125022009,
+      "ok": true
+    },
+    {
+      "targetSnr": 17,
+      "measuredToneSnr": -20.987221252027616,
+      "ok": true
+    },
+    {
+      "targetSnr": 15,
+      "measuredToneSnr": -20.987221753478295,
+      "ok": true
+    },
+    {
+      "targetSnr": 13,
+      "measuredToneSnr": -20.987221135983077,
+      "ok": true
+    },
+    {
+      "targetSnr": 11,
+      "measuredToneSnr": -20.98722166882926,
+      "ok": true
+    },
+    {
+      "targetSnr": 9,
+      "measuredToneSnr": -20.987221760822585,
+      "ok": true
+    },
+    {
+      "targetSnr": 7,
+      "measuredToneSnr": -20.9872213386818,
+      "ok": true
+    }
+  ]
+}

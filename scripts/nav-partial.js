@@ -14,8 +14,23 @@
 
 const NAV_ITEMS = [
   { href: 'index.html', label: '首页' },
-  { href: 'embed-image.html', label: '图片隐藏' },
+  { href: 'demo-degradation.html', label: '抗干扰演示' },
   { href: 'tech.html', label: '技术报告' }
+];
+
+/*
+ * FROZEN PAGES (phase 51). `图片隐藏` was removed from the navigation because the feature is frozen as
+ * experimental: the sideband capacity is only 168 bytes, so the secret image can only ever be a
+ * thumbnail, and RobustStego is the right tool for anyone who actually wants steganography.
+ *
+ * The two pages are still in the repository, still work, and are still cross-linked to each other
+ * through their page-head subnav (IMAGE_SIBLINGS in scripts/apply-nav.js). Nothing about them should be
+ * deleted - they are kept as a technical demonstration of the sideband payload channel, and the
+ * page-level checks must keep treating them as real pages.
+ */
+const FROZEN_PAGES = [
+  { href: 'embed-image.html', label: '图片隐藏 · 嵌入端' },
+  { href: 'extract-image.html', label: '图片隐藏 · 提取端' }
 ];
 
 /** Pages the spec wants in the nav but which do not exist yet. */
@@ -105,6 +120,6 @@ function stripBrandRegions(html) {
 }
 
 module.exports = {
-  NAV_ITEMS, MISSING_PAGES, NAV_BEGIN, NAV_END, navHtml, extractNav,
+  NAV_ITEMS, FROZEN_PAGES, MISSING_PAGES, NAV_BEGIN, NAV_END, navHtml, extractNav,
   PAGEHEAD_BEGIN, PAGEHEAD_END, pageHeadHtml, extractPageHead, stripBrandRegions
 };

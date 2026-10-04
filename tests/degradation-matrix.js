@@ -29,6 +29,7 @@
 'use strict';
 const fs = require('fs');
 const path = require('path');
+const execFileSync = require('child_process').execFileSync;
 
 const ROOT = path.join(__dirname, '..');
 const RESEARCH = path.join(ROOT, '..', '.research', 'npmtest', 'node_modules');
@@ -230,7 +231,13 @@ function buildIR(rt60, gainScale, lengthSamples) {
   return ir;
 }
 
-/** The IR this reverb realises, calibrated so it reaches -60 dB at RT60. */
+/*
+ * The IR with the UN-CALIBRATED gain scale, i.e. the textbook g = 10^(-3D/RT60) rather than the value
+ * `reverb()` actually uses. Useful for looking at the SHAPE (band ripple, early reflections), but its
+ * RT60 is not the nominal one - measured 0.60 s for a nominal 0.30 s - so it must never be used to
+ * report a decay time. `measureRT60(rt, gainScaleFor(rt))` is the calibrated path, and it is what the
+ * matrix labels its rows with.
+ */
 function reverbIR(rt60, lengthSamples) { return buildIR(rt60, 1, lengthSamples); }
 
 function reverb(samples, rt60) {
@@ -294,25 +301,52 @@ function freqShift(samples, hz, taps) {
   if (!hz) return samples;
   const nt = taps || 401;
   const h = hilbertFIR(nt);
-  const M = (nt - 1) / 2;
+  const M = (nt - 1) / 2;          // the FIR's group delay, in samples
   const n = samples.length;
   const out = new Float32Array(n);
   const w = 2 * Math.PI * hz / SR;
-  // circular history buffer, so no per-sample array shift
-  const buf = new Float32Array(nt);
+
+  /*
+   * ALIGNMENT. A causal Hilbert FIR of `nt` taps produces its output at time t - M, where M = (nt-1)/2:
+   * the value that appears at loop iteration i describes the signal M samples EARLIER. So the shift must
+   * be
+   *
+   *     out[t - M] = I(t - M) * cos(w*(t-M)) + Q(t - M) * sin(w*(t-M))
+   *
+   * - the I/Q pair taken at one instant, and the whole result delayed by M. The first version computed
+   * exactly that expression but wrote it to `out[t]`, i.e. it placed a correctly computed value at the
+   * wrong index, and comparing against the FFT reference exposed it: only -3 dB of waveform agreement,
+   * with a large fraction of the energy sitting 200 samples away. Every TONE test still passed, because
+   * a pure delay does not change the frequency a matched filter measures - which is why the error
+   * survived several rounds of checking.
+   *
+   * The ring buffer is therefore sized 2M+1 rather than nt: Q for the instant that is M samples BEHIND
+   * the loop cursor has to still be resident when the cursor reaches the index it belongs to.
+   */
+  const span = 2 * M + 1;
+  const buf = new Float32Array(nt);       // input history for the FIR
+  const qRing = new Float32Array(span);   // Hilbert outputs, indexed by sample time mod span
   let pos = 0;
   for (let i = 0; i < n; i++) {
     buf[pos] = samples[i];
     let q = 0;
-    // h[nt-1-k] pairs with the k-th most recent sample (buf index pos - k)
     let idx = pos;
     for (let k = 0; k < nt; k++) {
       q += h[nt - 1 - k] * buf[idx];
       idx = idx === 0 ? nt - 1 : idx - 1;
     }
     pos = pos === nt - 1 ? 0 : pos + 1;
-    const ii = i - M >= 0 ? samples[i - M] : 0;   // align I with the filter's group delay
-    out[i] = ii * Math.cos(w * i) + q * Math.sin(w * i);
+    qRing[i % span] = q;                   // Q for time i, delayed by M
+    const e = i - M;                       // the instant this value describes
+    if (e >= 0) {
+      const a = w * e;
+      out[e] = samples[e] * Math.cos(a) + qRing[(e + M) % span] * Math.sin(a);
+    }
+  }
+  // tail: the last M samples were never emitted, because their iteration index arrives after n-1
+  for (let e = Math.max(0, n - M); e < n; e++) {
+    const a = w * e;
+    out[e] = samples[e] * Math.cos(a) + qRing[(e + M) % span] * Math.sin(a);
   }
   return out;
 }
@@ -522,8 +556,8 @@ function psnrProfile(img, ref, width, height) {
 
 function buildMatrix() {
   const cells = [];
-  const add = (dim, param, fn, timeScale) =>
-    cells.push({ dim, param, fn, timeScale: timeScale == null ? 1 : timeScale });
+  const add = (dim, param, fn, timeScale, postFn) =>
+    cells.push({ dim, param, fn, timeScale: timeScale == null ? 1 : timeScale, postFn: postFn || null });
 
   /*
    * Frequency offset is a TUNING error, and is modelled as a true spectral shift (see freqShift).
@@ -543,6 +577,29 @@ function buildMatrix() {
     add('采样率失配', pct + ' %',
       (s, sr) => pct === 0 ? s : Channel.Channel.freqOffset(s, ratio),
       pct === 0 ? 1 : ratio);
+  }
+  /*
+   * Sample-rate mismatch aliases for the demo/curve ladder, which asks for exactly 0/0.2/0.5/1 %.
+   * Declared as the SAME impairment under a second label on purpose: the curve needs those four points,
+   * and duplicating the ladder is cheaper than making the full matrix match one consumer's grid. The two
+   * rows are identical by construction, so a reader comparing them is comparing nothing.
+   */
+  for (const pct of (QUICK ? [] : [0.2, 0.5, 1])) {
+    if (rates.indexOf(pct) >= 0) continue;
+    const ratio = 1 + pct / 100;
+    add('采样率失配', pct + ' %',
+      (s, sr) => Channel.Channel.freqOffset(s, ratio), ratio);
+  }
+
+  /*
+   * Frequency offset for the demo/curve ladder: 0, +/-10, +/-30, +/-50 Hz.
+   *
+   * +30/-30 are new here (the full ladder jumps 20 -> 50). They are added rather than replacing anything
+   * so the phase-49 table stays reproducible.
+   */
+  for (const hz of (QUICK ? [] : [30, -30])) {
+    if (freqs.indexOf(hz) >= 0) continue;
+    add('频率偏移', (hz >= 0 ? '+' : '') + hz + ' Hz', (s, sr) => freqShift(s, hz), 1);
   }
 
   const snrs = QUICK ? [30, 15, 6] : [null, 30, 20, 15, 10, 6];
@@ -577,7 +634,106 @@ function buildMatrix() {
   add('组合退化', 'SSB 失谐 + 噪声（+50 Hz + SNR 20）',
     (s, sr) => Channel.Channel.awgn(freqShift(s, 50), 20, 5));
 
+  /*
+   * IMAGE-DOMAIN DEGRADATIONS - the "real transmission" cases the demo ladder asks for.
+   *
+   * `postFn` runs on the DECODED raster, before the PSNR is computed. That is the only way to model these:
+   * JPEG is applied to pixels, and there is no audio-domain JPEG. The alternative reading - "audio codec
+   * re-encode" - is a DIFFERENT and also real impairment, and it is measured separately as 音频编码
+   * because the two must not be conflated (they act on different domains and fail differently).
+   *
+   * - 清洁信道 (identity) doubles as the no-JPEG reference: the row proves the harness itself costs
+   *   nothing, which is what makes the JPEG row interpretable.
+   * - 质量 30 is the aggressive end (a heavily recompressed forward to a chat app).
+   */
+  add('组合退化', 'JPEG 重编码 质量 30（清洁信道）', (s) => s, 1, (im) => jpegRoundTrip(im, 30));
+  add('组合退化', 'JPEG 重编码 质量 60（清洁信道）', (s) => s, 1, (im) => jpegRoundTrip(im, 60));
+  add('组合退化', 'JPEG 重编码 质量 85（清洁信道）', (s) => s, 1, (im) => jpegRoundTrip(im, 85));
+  add('组合退化', 'AWGN 20 dB + 频偏 +20 Hz',
+    (s) => Channel.Channel.awgn(freqShift(s, 20), 20, 11));
+  add('组合退化', '削波 3× + AWGN 15 dB + 时钟 0.5%',
+    (s) => clip(Channel.Channel.awgn(s, 15, 13), 3), 1);
+  add('组合退化', '声学 RT60 0.30 s + 频偏 +10 Hz',
+    (s) => freqShift(reverb(s, 0.3), 10));
+  add('组合退化', '声学 RT60 0.30 s + 频偏 −10 Hz',
+    (s) => freqShift(reverb(s, 0.3), -10));
+
   return cells;
+}
+
+/**
+ * Re-encode a decoded raster through a REAL baseline JPEG at a given quality and decode it back.
+ *
+ * WHY ffmpeg AND NOT A SIMULATION
+ *   "JPEG re-encode" is only meaningful if an actual JPEG codec is involved; a hand-rolled approximation
+ *   (block-wise DCT with a guessed quantiser) would produce numbers that look like JPEG's but are not
+ *   comparable with anything. `jpeg-js` is not present in the available module tree, and ffmpeg is, so the
+ *   round trip goes through ffmpeg: PPM -> JPEG (-q:v) -> rawvideo RGB24. The quality mapping is
+ *   MONOTONIC but not the same scale as libjpeg's 0-100, so the cell labels carry the ffmpeg `-q:v` value
+ *   and the achieved file size, and the results are reported as "q:v N" rather than as a quality score
+ *   from a codec that was not used.
+ *
+ * Returns `{image, bytes}` on success and `{image, skipped}` when ffmpeg is unavailable - the caller
+ * records the skip. Silently returning the input would make this row report the CLEAN psnr, i.e. "JPEG
+ * costs nothing", which is the most misleading outcome available.
+ */
+function jpegRoundTrip(image, qv) {
+  const exe = findFfmpeg();
+  if (!exe) return { image: image, skipped: 'ffmpeg 不可用' };
+  const w = image.width, h = image.height;
+  const tmp = path.join(OUTDIR, '.jpeg-rt');
+  fs.mkdirSync(tmp, { recursive: true });
+  const ppm = path.join(tmp, 'in.ppm');
+  const jpg = path.join(tmp, 'out.jpg');
+  const rgb = path.join(tmp, 'out.rgb');
+  // PPM (P6): 15-byte header, then RGB triples
+  const head = Buffer.from('P6\n' + w + ' ' + h + '\n255\n', 'ascii');
+  const body = Buffer.alloc(w * h * 3);
+  for (let i = 0, k = 0; i < w * h; i++, k += 3) {
+    body[k] = image.data[i * 4]; body[k + 1] = image.data[i * 4 + 1]; body[k + 2] = image.data[i * 4 + 2];
+  }
+  fs.writeFileSync(ppm, Buffer.concat([head, body]));
+  let bytes = 0;
+  try {
+    execFileSync(exe, ['-y', '-loglevel', 'error', '-i', ppm, '-q:v', String(qv), jpg],
+      { stdio: 'pipe', timeout: 120000 });
+    execFileSync(exe, ['-y', '-loglevel', 'error', '-i', jpg, '-f', 'rawvideo', '-pix_fmt', 'rgb24', rgb],
+      { stdio: 'pipe', timeout: 120000 });
+    bytes = fs.statSync(jpg).size;
+  } catch (e) {
+    fs.rmSync(tmp, { recursive: true, force: true });
+    return { image: image, skipped: 'ffmpeg 调用失败: ' + (e.message || e) };
+  }
+  const back = fs.readFileSync(rgb);
+  /*
+   * The intermediates are ~490 KB per run (a 246 KB PPM, a 246 KB RAW and the JPEG) and the directory was
+   * previously left behind, which showed up in `git status` as an untracked dot-directory. They are removed
+   * here in a finally-style path that also covers the read failure below, so the only thing that outlives the
+   * call is the measured byte count.
+   */
+  fs.rmSync(tmp, { recursive: true, force: true });
+  if (back.length < w * h * 3) return { image: image, skipped: 'ffmpeg 输出尺寸不符' };
+  const data = new Uint8ClampedArray(w * h * 4);
+  for (let i = 0, k = 0; i < w * h; i++, k += 3) {
+    data[i * 4] = back[k]; data[i * 4 + 1] = back[k + 1]; data[i * 4 + 2] = back[k + 2]; data[i * 4 + 3] = 255;
+  }
+  return { image: { data: data, width: w, height: h }, qv: qv, bytes: bytes };
+}
+
+/** Locate an ffmpeg binary, preferring the one this project has been using. */
+let FFMPEG_CACHE;
+function findFfmpeg() {
+  if (FFMPEG_CACHE !== undefined) return FFMPEG_CACHE;
+  const cands = [
+    path.join(process.env.LOCALAPPDATA || '', 'Microsoft', 'WinGet', 'Links', 'ffmpeg.exe'),
+    'ffmpeg'
+  ];
+  for (const c of cands) {
+    if (c === 'ffmpeg') { FFMPEG_CACHE = c; return c; }
+    if (fs.existsSync(c)) { FFMPEG_CACHE = c; return c; }
+  }
+  FFMPEG_CACHE = null;
+  return null;
 }
 
 // ---------------------------------------------------------------- runner
@@ -635,6 +791,10 @@ function buildMatrix() {
 
   const ctrl = loadControl(MODE, CONTROL);
   const img = ctrl.img;
+  // the source's own chroma ratio, so the 色带 verdict can be relative rather than absolute
+  const srcChroma = imageStats(img).ratioGR;
+  console.log('控制图自身色度比 σ(G−R)/σ(L) = ' + (srcChroma == null ? '--' : srcChroma.toFixed(3)) +
+    '（判据以此为基准：只有明显高于它才算编码引入的色带）');
   const timeline = Timeline.build(img, MODE);
   const clean = Synth.synthesize(timeline, SR);
   const syncs = trueSyncs(timeline);
@@ -667,9 +827,21 @@ function buildMatrix() {
       row.psnr = null; row.status = '解码失败';
       row.error = err || (dec && dec.message) || 'no result';
     } else {
-      const m = psnr(dec.imageData.data, img.data);
+      /*
+       * `postFn` models degradations that live in the IMAGE domain (JPEG re-encode). It runs on the
+       * decoded raster before any metric is taken, so the row measures "decode, then recompress, then
+       * compare" - which is the real forward-to-a-chat-app path. A `skipped` result is recorded rather
+       * than ignored: returning the input unchanged would report the clean PSNR for a JPEG row.
+       */
+      let measured = dec.imageData;
+      if (c.postFn) {
+        const pr = c.postFn(dec.imageData);
+        if (pr && pr.skipped) { row.postSkipped = pr.skipped; }
+        else if (pr && pr.image) { measured = pr.image; row.postBytes = pr.bytes; row.postQv = pr.qv; }
+      }
+      const m = psnr(measured.data, img.data);
       const rs = residualStats(refs, syncs, c.timeScale);
-      const st = imageStats(dec.imageData);
+      const st = imageStats(measured);
       row.psnr = m.psnr; row.maxDiff = m.maxDiff;
       row.bias = rs ? rs.bias : null; row.biasPx = rs ? rs.biasPx : null;
       row.periodSamples = rs ? rs.periodSamples : null;
@@ -681,19 +853,22 @@ function buildMatrix() {
       row.freeRun = rs ? rs.freeRun : null;
       row.sdGR = st.sdGR; row.sdL = st.sdL; row.chroma = st.ratioGR;
       row.rowCorr = st.rowCorr; row.shear1 = st.shear1; row.shear2 = st.shear2;
-      const prof = psnrProfile(dec.imageData.data, img.data, MODE.width, MODE.height);
+      const prof = psnrProfile(measured.data, img.data, MODE.width, MODE.height);
       row.profileLeft = prof.left; row.profileRight = prof.right; row.profileDrop = prof.drop;
       row.profile = prof.bands.map((v) => Math.round(v * 10) / 10);
       row.clockScale = dec.calibration ? dec.calibration.clockScale : null;
       row.mode = dec.mode ? dec.mode.name : null;
-      row.status = classify(row);
+      row.status = classify(row, srcChroma);
+      // kept off the JSON (underscore-prefixed) purely so the PNG writer can use the measured raster
+      row._measured = measured;
     }
     row.ms = ms;
     rows.push(row);
     if (PNG && row.psnr != null) {
       const safe = (c.dim + '-' + c.param).replace(/[^\w\u4e00-\u9fa5.+-]+/g, '_');
+      // save the MEASURED raster, so a JPEG row's PNG shows the JPEG artefacts it was scored on
       fs.writeFileSync(path.join(OUTDIR, 'degradation-' + safe + '.png'),
-        PNG.sync.write(toPNG(dec.imageData)));
+        PNG.sync.write(toPNG(row._measured || dec.imageData)));
     }
     console.log('[' + String(i + 1).padStart(2) + '/' + cells.length + '] ' + label.padEnd(42) +
       ' PSNR ' + (row.psnr == null ? '  --  ' : row.psnr.toFixed(2).padStart(6)) +
@@ -703,22 +878,79 @@ function buildMatrix() {
   }
 
   console.log('\n总耗时 ' + ((Date.now() - t00) / 1000).toFixed(0) + ' s');
-  fs.writeFileSync(path.join(OUTDIR, 'degradation-matrix.json'),
-    JSON.stringify({ mode: MODE.id, modeName: MODE.name, sampleRate: SR, quick: QUICK,
-      pixelSamples: PIXEL, control: { width: MODE.width, height: MODE.height,
-        duration: timeline.duration, syncs: syncs.length }, rows: rows }, null, 2));
+
+  /*
+   * Two output files, deliberately:
+   *
+   *   diag-quality/degradation-matrix.json  - the long-standing artifact. Its schema is consumed by
+   *     scripts/gen-tech-html.js (tables 4/8) and tests/gen-baseline-report.js, so it must keep its shape.
+   *   degradation-matrix-results.json       - the artifact this round's curve chart and interactive demo
+   *     page read. Written at the repository root tests/ so its path is stable and obvious.
+   *
+   * They carry the same rows; only the framing differs. `_measured` (a raster object) is stripped from
+   * both - it exists only so the PNG writer can persist the scored image.
+   */
+  const cleanRows = rows.map((r) => { const o = Object.assign({}, r); delete o._measured; return o; });
+  const payload = { mode: MODE.id, modeName: MODE.name, sampleRate: SR, quick: QUICK,
+    pixelSamples: PIXEL, control: { kind: CONTROL, label: ctrl.label, width: MODE.width, height: MODE.height,
+      duration: timeline.duration, syncs: syncs.length },
+    generatedAt: new Date().toISOString(), rows: cleanRows };
+
+  fs.writeFileSync(path.join(OUTDIR, 'degradation-matrix.json'), JSON.stringify(payload, null, 2));
   console.log('证据 -> tests/diag-quality/degradation-matrix.json');
+
+  /*
+   * A FILTERED RUN MUST NOT OVERWRITE THE CANONICAL RESULTS FILE.
+   *
+   * `--only` (and `--quick`) exist for fast iteration, and both produce a partial matrix. Writing that to
+   * tests/degradation-matrix-results.json replaces the 48-row dataset that the curve chart, the tech report's
+   * §5.9 and its comparison figure all read - so a one-row smoke test silently guts the published artifacts.
+   * This has now happened twice; the fix is to route partial runs to their own file rather than to try to
+   * remember.
+   *
+   * `--out <path>` overrides, for the rare case where a partial run IS the intended artifact.
+   */
+  const isPartial = !!ONLY || QUICK;
+  const outArg = ARGV.indexOf('--out') >= 0 ? ARGV[ARGV.indexOf('--out') + 1] : null;
+  const resultsPath = outArg
+    ? path.resolve(ROOT, outArg)
+    : (isPartial
+      ? path.join(__dirname, 'degradation-matrix-partial.json')
+      : path.join(__dirname, 'degradation-matrix-results.json'));
+
+  const byDim = {};
+  for (const r of cleanRows) { (byDim[r.dim] = byDim[r.dim] || []).push(r); }
+  fs.writeFileSync(resultsPath, JSON.stringify({
+    mode: payload.mode, modeName: payload.modeName, sampleRate: SR, quick: QUICK,
+    partial: isPartial, only: ONLY,
+    control: payload.control, generatedAt: payload.generatedAt,
+    dimensions: byDim, rows: cleanRows
+  }, null, 2));
+  console.log('结果 -> ' + path.relative(ROOT, resultsPath).replace(/\\/g, '/') + '（' + cleanRows.length +
+    ' 行，' + Object.keys(byDim).length + ' 个维度' + (isPartial ? ' · 部分运行' : '') + '）');
+  if (isPartial) {
+    console.log('      注意：部分运行（--only/--quick）不写入 degradation-matrix-results.json，' +
+      '以免覆盖供曲线图与报告使用的完整数据集。');
+  }
 })().catch((e) => { console.error(e && e.stack || e); process.exitCode = 1; });
 
 function fmt(v) { return v == null ? '  --  ' : v.toFixed(0).padStart(5); }
 function fmtPct(v) { return v == null ? '  --  ' : (v >= 0 ? '+' : '') + v.toFixed(3).padStart(6) + '%'; }
 
-/** Pass/fail thresholds, stated once so the table cannot drift from the verdicts. */
-function classify(row) {
+/**
+ * Pass/fail thresholds, stated once so the table cannot drift from the verdicts.
+ *
+ * The chroma check is RELATIVE to the source image's own chroma ratio, and that correction matters: this
+ * classifier used to flag any decode with ratioGR > 1.0 as 色带, which fired on the colour-bar pattern at
+ * ~1.62 - but the SOURCE pattern's own ratio is 1.626, so the decode was faithful and the verdict was
+ * simply wrong. A saturated test pattern legitimately has a high σ(G−R)/σ(L); only an INCREASE over the
+ * source indicates chroma that the encoder invented.
+ */
+function classify(row, srcChroma) {
   if (row.psnr == null) return '失败';
   if (row.psnr < 20) return '崩溃';
   if (row.psnr < 25) return '劣化';
-  if (row.chroma != null && row.chroma > 1.0) return '色带';
+  if (row.chroma != null && srcChroma != null && row.chroma > srcChroma * 1.25) return '色带';
   if (row.jitterMAD != null && row.jitterMAD / PIXEL > 1.0) return '抖动';
   return '通过';
 }

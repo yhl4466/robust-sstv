@@ -1,0 +1,381 @@
+{
+  "usableThresholdDb": 25,
+  "control": {
+    "kind": "pattern",
+    "label": "合成测试图（彩条+灰阶+棋盘）",
+    "width": 320,
+    "height": 256,
+    "duration": 110.64331999999722,
+    "syncs": 257
+  },
+  "series": [
+    {
+      "key": "AWGN",
+      "label": "加性噪声",
+      "color": "#4c9aff",
+      "points": [
+        {
+          "label": "clean",
+          "psnr": 25.43983094994564,
+          "status": "通过",
+          "raw": "clean"
+        },
+        {
+          "label": "30 dB",
+          "psnr": 25.265220407354448,
+          "status": "通过",
+          "raw": "SNR 30 dB"
+        },
+        {
+          "label": "20 dB",
+          "psnr": 24.835313358901207,
+          "status": "劣化",
+          "raw": "SNR 20 dB"
+        },
+        {
+          "label": "15 dB",
+          "psnr": 24.11046667846161,
+          "status": "劣化",
+          "raw": "SNR 15 dB"
+        },
+        {
+          "label": "10 dB",
+          "psnr": 22.19438183597387,
+          "status": "劣化",
+          "raw": "SNR 10 dB"
+        },
+        {
+          "label": "6 dB",
+          "psnr": 20.431499509907752,
+          "status": "劣化",
+          "raw": "SNR 6 dB"
+        }
+      ],
+      "crossing": {
+        "kind": "cross",
+        "from": "30 dB",
+        "to": "20 dB",
+        "index": 1.6169
+      }
+    },
+    {
+      "key": "削波",
+      "label": "硬削波",
+      "color": "#f5a623",
+      "points": [
+        {
+          "label": "1×",
+          "psnr": 25.43983094994564,
+          "status": "通过",
+          "raw": "1×"
+        },
+        {
+          "label": "1.5×",
+          "psnr": 25.131398081919592,
+          "status": "通过",
+          "raw": "1.5×"
+        },
+        {
+          "label": "2×",
+          "psnr": 24.915772168874174,
+          "status": "劣化",
+          "raw": "2×"
+        },
+        {
+          "label": "3×",
+          "psnr": 24.579103661960097,
+          "status": "劣化",
+          "raw": "3×"
+        },
+        {
+          "label": "4×",
+          "psnr": 24.28772013914941,
+          "status": "劣化",
+          "raw": "4×"
+        },
+        {
+          "label": "8×",
+          "psnr": 22.934155360032783,
+          "status": "劣化",
+          "raw": "8×"
+        }
+      ],
+      "crossing": {
+        "kind": "cross",
+        "from": "1.5×",
+        "to": "2×",
+        "index": 1.6094
+      }
+    },
+    {
+      "key": "频率偏移+",
+      "label": "频率失谐（正向）",
+      "color": "#e8574a",
+      "points": [
+        {
+          "label": "0",
+          "psnr": 25.43983094994564,
+          "status": "通过",
+          "raw": "+0 Hz"
+        },
+        {
+          "label": "+5 Hz",
+          "psnr": 25.0733492986043,
+          "status": "通过",
+          "raw": "+5 Hz"
+        },
+        {
+          "label": "+10 Hz",
+          "psnr": 25.213435916208027,
+          "status": "通过",
+          "raw": "+10 Hz"
+        },
+        {
+          "label": "+20 Hz",
+          "psnr": 25.860917625350986,
+          "status": "通过",
+          "raw": "+20 Hz"
+        },
+        {
+          "label": "+30 Hz",
+          "psnr": 26.739257306799757,
+          "status": "通过",
+          "raw": "+30 Hz"
+        },
+        {
+          "label": "+50 Hz",
+          "psnr": 26.80256176293339,
+          "status": "通过",
+          "raw": "+50 Hz"
+        },
+        {
+          "label": "+100 Hz",
+          "psnr": 6.549303190019601,
+          "status": "崩溃",
+          "raw": "+100 Hz"
+        }
+      ],
+      "crossing": {
+        "kind": "cross",
+        "from": "+50 Hz",
+        "to": "+100 Hz",
+        "index": 5.089
+      }
+    },
+    {
+      "key": "频率偏移-",
+      "label": "频率失谐（负向）",
+      "color": "#ff8f7a",
+      "points": [
+        {
+          "label": "-5 Hz",
+          "psnr": 23.679953000999006,
+          "status": "劣化",
+          "raw": "-5 Hz"
+        },
+        {
+          "label": "-10 Hz",
+          "psnr": 20.782363352821687,
+          "status": "劣化",
+          "raw": "-10 Hz"
+        },
+        {
+          "label": "-20 Hz",
+          "psnr": 16.152369856885525,
+          "status": "崩溃",
+          "raw": "-20 Hz"
+        },
+        {
+          "label": "-30 Hz",
+          "psnr": 13.424358300212944,
+          "status": "崩溃",
+          "raw": "-30 Hz"
+        },
+        {
+          "label": "-50 Hz",
+          "psnr": 10.847471152524822,
+          "status": "崩溃",
+          "raw": "-50 Hz"
+        },
+        {
+          "label": "-100 Hz",
+          "psnr": 7.870481267141947,
+          "status": "崩溃",
+          "raw": "-100 Hz"
+        }
+      ],
+      "crossing": {
+        "kind": "below",
+        "first": {
+          "label": "-5 Hz",
+          "psnr": 23.679953000999006
+        }
+      }
+    },
+    {
+      "key": "采样率失配",
+      "label": "采样率失配",
+      "color": "#9b7dea",
+      "points": [
+        {
+          "label": "0 %",
+          "psnr": 25.43983094994564,
+          "status": "通过",
+          "raw": "0 %"
+        },
+        {
+          "label": "0.05 %",
+          "psnr": 23.34239855803558,
+          "status": "劣化",
+          "raw": "0.05 %"
+        },
+        {
+          "label": "0.1 %",
+          "psnr": 21.023341464991642,
+          "status": "劣化",
+          "raw": "0.1 %"
+        },
+        {
+          "label": "0.2 %",
+          "psnr": 17.748945995401197,
+          "status": "崩溃",
+          "raw": "0.2 %"
+        },
+        {
+          "label": "0.5 %",
+          "psnr": 13.534659372838549,
+          "status": "崩溃",
+          "raw": "0.5 %"
+        },
+        {
+          "label": "1 %",
+          "psnr": 10.55611791115547,
+          "status": "崩溃",
+          "raw": "1 %"
+        },
+        {
+          "label": "2 %",
+          "psnr": null,
+          "status": "解码失败",
+          "raw": "2 %"
+        }
+      ],
+      "crossing": {
+        "kind": "cross",
+        "from": "0 %",
+        "to": "0.05 %",
+        "index": 0.2097
+      }
+    },
+    {
+      "key": "声学路径",
+      "label": "声学路径（混响）",
+      "color": "#37b98a",
+      "points": [
+        {
+          "label": "0.20",
+          "psnr": 17.807838143467364,
+          "status": "崩溃",
+          "raw": "RT60 0.20 s"
+        },
+        {
+          "label": "0.30",
+          "psnr": 10.115588876090273,
+          "status": "崩溃",
+          "raw": "RT60 0.30 s"
+        },
+        {
+          "label": "0.60",
+          "psnr": null,
+          "status": "解码失败",
+          "raw": "RT60 0.60 s"
+        },
+        {
+          "label": "1.00",
+          "psnr": null,
+          "status": "解码失败",
+          "raw": "RT60 1.00 s"
+        }
+      ],
+      "crossing": {
+        "kind": "below",
+        "first": {
+          "label": "0.20",
+          "psnr": 17.807838143467364
+        }
+      }
+    },
+    {
+      "key": "组合退化",
+      "label": "组合退化",
+      "color": "#c9a227",
+      "points": [
+        {
+          "label": "灯下干净（RT60 0.3 + +10 Hz 失谐）",
+          "psnr": 10.234775392516582,
+          "status": "崩溃",
+          "raw": "灯下干净（RT60 0.3 + +10 Hz 失谐）"
+        },
+        {
+          "label": "手机外放（RT60 0.3 + 削波 3× + +20 Hz）",
+          "psnr": 10.273828529963595,
+          "status": "崩溃",
+          "raw": "手机外放（RT60 0.3 + 削波 3× + +20 Hz）"
+        },
+        {
+          "label": "弱信号（SNR 15 + RT60 0.3 + +20 Hz）",
+          "psnr": 10.224828784048619,
+          "status": "崩溃",
+          "raw": "弱信号（SNR 15 + RT60 0.3 + +20 Hz）"
+        },
+        {
+          "label": "最坏（SNR 10 + RT60 0.6 + 削波 3× + +50 Hz + 0.5%）",
+          "psnr": null,
+          "status": "解码失败",
+          "raw": "最坏（SNR 10 + RT60 0.6 + 削波 3× + +50 Hz + 0.5%）"
+        },
+        {
+          "label": "SSB 失谐 + 噪声（+50 Hz + SNR 20）",
+          "psnr": 26.343791880250016,
+          "status": "通过",
+          "raw": "SSB 失谐 + 噪声（+50 Hz + SNR 20）"
+        }
+      ],
+      "crossing": {
+        "kind": "below",
+        "first": {
+          "label": "灯下干净（RT60 0.3 + +10 Hz 失谐）",
+          "psnr": 10.234775392516582
+        }
+      }
+    },
+    {
+      "key": "JPEG",
+      "label": "JPEG 重编码",
+      "color": "#6f7b8a",
+      "points": [
+        {
+          "label": "q85",
+          "psnr": 28.307549018359076,
+          "status": "通过",
+          "raw": "JPEG 重编码 质量 85（清洁信道）"
+        },
+        {
+          "label": "q60",
+          "psnr": 28.307549018359076,
+          "status": "通过",
+          "raw": "JPEG 重编码 质量 60（清洁信道）"
+        },
+        {
+          "label": "q30",
+          "psnr": 28.304422497173157,
+          "status": "通过",
+          "raw": "JPEG 重编码 质量 30（清洁信道）"
+        }
+      ],
+      "crossing": {
+        "kind": "always"
+      }
+    }
+  ]
+}

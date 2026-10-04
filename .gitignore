@@ -3,9 +3,28 @@ tests/out/
 tests/downloads/
 tests/svg-fixes/
 tests/paper-figures/
+# 演示页的基础音频与烘焙冲激响应，由 tests/measure-demo-base.js 与 tests/bake-demo-ir.js 生成；
+# 缺失时 scripts/gen-demo-page.js 会报错并提示重跑，不会静默产出坏页面。
+tests/demo-audio/
+
+# 部分运行的退化矩阵（--only / --quick）。完整结果 degradation-matrix-results.json 是产物，
+# 需要入库；这个仅用于快速迭代，不应提交。
+tests/degradation-matrix-partial.json
 
 # 脚本产物中的图片（保留 JSON）
 scripts/out/*.png
+
+# ffmpeg 的 JPEG 往返中间产物（tests/degradation-matrix.js 运行后自行清理，
+# 这条是清理失败时的兜底）
+tests/diag-quality/.jpeg-rt/
+
+# 真机录音的 48 kHz 单声道派生件（各 ~15-21 MB）。源文件已在库内
+# （tests/fixtures/phigros.wav 与 acoustic-real-m1.m4a.mp3，二者字节相同），派生件可用 ffmpeg 重建：
+#   ffmpeg -i tests/fixtures/phigros.wav -ac 1 -ar 48000 tests/diag-quality/acoustic-real-48k-mono.wav
+#   ffmpeg -i "测试结果/2026-10-03 15-34-34.mp4" -vn -ac 1 -ar 48000 tests/diag-quality/obs-mp4-48k-mono.wav
+# 不重建时，直接读它们的诊断脚本会报"文件缺失"——这是有意的，比静默跑在旧数据上更好。
+tests/diag-quality/acoustic-real-48k-mono.wav
+tests/diag-quality/obs-mp4-48k-mono.wav
 
 # 临时文件
 *.tmp

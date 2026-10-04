@@ -16,7 +16,7 @@
     <label for="navToggle" class="nav-toggle-btn" aria-label="展开导航菜单">菜单</label>
     <nav class="nav-links" aria-label="主导航">
       <a href="index.html" class="active" aria-current="page">首页</a>
-      <a href="embed-image.html">图片隐藏</a>
+      <a href="demo-degradation.html">抗干扰演示</a>
       <a href="tech.html">技术报告</a>
     </nav>
     <div class="badge-local" id="backendBadge" title="当前后端模式">local</div>
@@ -43,7 +43,7 @@
   </ol>
 </section>
 
-<p class="wrap minor-entry">想在音频里藏一张秘密图？<a href="embed-image.html">试试图片隐藏功能 →</a></p>
+<p class="wrap minor-entry">想在音频里藏一张秘密图？那属于隐写，请用 <a href="https://yhl4466.github.io/robust-stego/" target="_blank" rel="noopener">RobustStego →</a></p>
 
 <section class="wrap faq">
   <h2>常见问题</h2>
@@ -54,6 +54,8 @@
   <details><summary>可以用在真实无线电上吗？</summary><p>可以。这段声音本来就是为窄带语音信道设计的，通过业余无线电、对讲机或任何能传声音的设备都能送出去。实测在明显失真的录音上仍能还原出可辨认的图片。</p></details>
   <details><summary>微信怎么发送？</summary><p>把生成的声音文件当"文件"发送，不要录成语音消息，因为语音消息会被大幅压缩。对方收到文件后用"解码音频"上传即可。如果只能发语音，尽量在安静环境里用高质量录音。</p></details>
 </section>
+
+<p class="wrap minor-entry"><a href="demo-degradation.html">抗干扰能力演示 →</a> <span class="muted">拖动滑块，实时看不同干扰下还能不能读出来</span></p>
 
 <p class="wrap minor-entry"><a href="tech.html">阅读技术报告 →</a></p>
 
@@ -218,19 +220,13 @@
   </details>
 </section>
 
-<section class="wrap">
-  <details class="card ext">
-    <summary>扩展接口自检（LDPC / 图片隐藏 / 非纯前端模式）</summary>
-    <div id="extPanel" class="ext-panel"></div>
-    <div class="actions">
-      <button id="extRefresh" class="ghost">刷新接口与容量表</button>
-    </div>
-  </details>
-</section>
 </details>
 <!-- EXPERT:END -->
 
 <footer class="wrap site-footer">
+  <!-- Cross-link to the sibling project. Kept in the footer so it is consistently placed, reachable
+       from every page section, and never competes with the encode/decode flow. -->
+  <p class="muted"><a href="https://yhl4466.github.io/robust-stego/" target="_blank" rel="noopener">另见 RobustStego →</a></p>
   <p>
     编码逻辑与模式时序复用自 <a href="https://github.com/CKegel/Web-SSTV" target="_blank" rel="noopener">CKegel/Web-SSTV</a>（MIT）；
     解调核心移植自 <a href="https://github.com/samccone/sstv" target="_blank" rel="noopener">samccone/sstv</a>（MIT）；
