@@ -1,13 +1,13 @@
 {
-  "generatedAt": "2026-10-04T17:42:19.492Z",
+  "generatedAt": "2026-10-04T18:16:58.944Z",
   "node": "v24.19.0",
   "ran": false,
   "totals": {
-    "entries": 69,
+    "entries": 70,
     "verdictSuites": 23,
     "verdictPass": 0,
     "verdictFail": 0,
-    "diagnostic": 46
+    "diagnostic": 47
   },
   "results": [
     {
@@ -217,6 +217,13 @@
       "file": "tests/measure-demo-base.js",
       "kind": "diagnostic",
       "covers": "选定演示页基础音频（模式/采样率/时长）",
+      "exists": true,
+      "status": "not-run"
+    },
+    {
+      "file": "tests/rebuild-derived-audio.js",
+      "kind": "diagnostic",
+      "covers": "重建被 gitignore 的 48k 派生音频（ffmpeg）",
       "exists": true,
       "status": "not-run"
     },

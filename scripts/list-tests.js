@@ -77,6 +77,7 @@ const SUITES = [
    * `verdict` entries here are the ones that can FAIL a build; the diagnose-* ones answer questions.
    */
   { file: 'measure-demo-base.js', kind: 'diagnostic', covers: '选定演示页基础音频（模式/采样率/时长）' },
+  { file: 'rebuild-derived-audio.js', kind: 'diagnostic', covers: '重建被 gitignore 的 48k 派生音频（ffmpeg）' },
   { file: 'measure-demo-timing.js', kind: 'diagnostic', covers: '演示页解码耗时预算测量' },
   { file: 'bake-demo-ir.js', kind: 'diagnostic', covers: '烘焙演示页房间冲激响应' },
   { file: 'verify-demo-ladder.js', kind: 'verdict', covers: '演示页退化阶梯逐步验证（无空操作/无抛错）' },
