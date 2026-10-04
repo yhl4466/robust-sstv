@@ -322,6 +322,21 @@ const COMPARISON_FIG = '<img alt="六种退化下的解码结果并排对比" st
 /** The matrix row for an exact parameter label, so a table cell can never quote a number that is not there. */
 const rowOf = (dim, param) => MATRIX.rows.find((r) => r.dim === dim && r.param === param) || null;
 const dbOf = (dim, param) => { const r = rowOf(dim, param); return r && r.psnr != null ? r.psnr.toFixed(2) : '失败'; };
+/*
+ * How far a passing rung sits ABOVE the 25 dB criterion, signed.
+ *
+ * This column exists because the pass/fail table alone lost the most useful fact about the noise dimension:
+ * its top rung clears the criterion by 0.27 dB, so "噪声容忍到 30 dB" reads far better than the measurement
+ * supports. A margin column makes "just barely passed" visible instead of leaving it to the reader to
+ * compare two decimals by eye.
+ */
+const USABLE_DB_REF = 25;
+const marginOf = (dim, param) => {
+  const r = rowOf(dim, param);
+  if (!r || r.psnr == null) return '—';
+  const m = r.psnr - USABLE_DB_REF;
+  return (m >= 0 ? '+' : '') + m.toFixed(2) + ' dB';
+};
 const FIG11 = inlineFigure('fig11-content-dependence.svg');
 const FIG12 = inlineFigure('fig12-real-audio.svg');
 const FIG13 = inlineFigure('fig13-postprocess.svg');
@@ -513,26 +528,33 @@ ${FIG14}
 <p>图 14 为六类退化的解码 PSNR 曲线。横轴是各维度在自身档位序列中的归一化位置：六个维度的单位并不相通（“20 dB 信噪比”与“RT60 0.30 s”无法共用一根实轴），因此曲线只表达“在该维度的可用范围内走到哪一步”，每点的实际参数标于刻度。曲线上的圆圈标记该维度跌破 25 dB 的位置，由相邻两点线性插值得到。</p>
 <p>各维度的临界参数汇总于表 11：</p>
 ${tbl(11, '11 六类退化的临界参数（' + MATRIX.modeName + '，合成测试图，判据 25 dB）',
-  ['退化维度', '仍可用', '已不可用', '临界处 PSNR', '实测依据'],
+  ['退化维度', '最后一档达标', '第一档不达标', '两档实测 PSNR', '达标档余量', '实测依据'],
   [
-    ['加性噪声（AWGN）', '20 dB', '15 dB', dbOf('AWGN', 'SNR 20 dB') + ' → ' + dbOf('AWGN', 'SNR 15 dB'),
-      '10 dB 时降至 ' + dbOf('AWGN', 'SNR 10 dB') + ' dB，噪声在图上表现为色度带'],
+    ['加性噪声（AWGN）', '30 dB', '20 dB',
+      dbOf('AWGN', 'SNR 30 dB') + ' → ' + dbOf('AWGN', 'SNR 20 dB'),
+      marginOf('AWGN', 'SNR 30 dB'),
+      '余量最薄的一维；10 dB 时 ' + dbOf('AWGN', 'SNR 10 dB') + ' dB，噪声在图上表现为色度带'],
     ['硬削波', '1.5×', '2×', dbOf('削波', '1.5×') + ' → ' + dbOf('削波', '2×'),
-      '8× 仍有 ' + dbOf('削波', '8×') + ' dB，与调频信号信息载于瞬时频率、削波保留过零点一致'],
+      marginOf('削波', '1.5×'),
+      '衰减平缓：8× 仍有 ' + dbOf('削波', '8×') + ' dB，与调频信号信息载于瞬时频率、削波保留过零点一致'],
     ['频率失谐（正向）', '+50 Hz', '+100 Hz', dbOf('频率偏移', '+50 Hz') + ' → ' + dbOf('频率偏移', '+100 Hz'),
-      '正向容忍度很高'],
+      marginOf('频率偏移', '+50 Hz'), '正向余量充足'],
     ['频率失谐（负向）', '0 Hz', '−5 Hz', dbOf('频率偏移', '+0 Hz') + ' → ' + dbOf('频率偏移', '-5 Hz'),
-      '负向从第一档起即跌破，根因见 6.4 节'],
+      marginOf('频率偏移', '+0 Hz'), '负向从第一个非零档位起即不达标，根因见 6.4 节'],
     ['采样率失配', '0 %', '0.05 %', dbOf('采样率失配', '0 %') + ' → ' + dbOf('采样率失配', '0.05 %'),
+      marginOf('采样率失配', '0 %'),
       '0.2 % 时 ' + dbOf('采样率失配', '0.2 %') + ' dB，2 % 完全解不出'],
-    ['声学路径（混响）', '低于阈值', 'RT60 0.20 s', '—',
-      '实测 RT60 0.20 s 即 ' + dbOf('声学路径', 'RT60 0.20 s') + ' dB，0.60 s 起无法解码'],
-    ['组合退化', '低于阈值', '全部档位', '—',
+    ['声学路径（混响）', '无（0.20 s 即不达标）', 'RT60 0.20 s', '— → ' + dbOf('声学路径', 'RT60 0.20 s'),
+      '—', '最低档位仍未达标；0.60 s 起无法解码'],
+    ['组合退化', '无（全部档位均不达标）', '全部档位', '—', '—',
       '最轻的一档（RT60 0.3 + 10 Hz 失谐）即 ' + dbOf('组合退化', '灯下干净（RT60 0.3 + +10 Hz 失谐）') + ' dB']
   ],
-  '注：同一维度的“仍可用/已不可用”两列给出跨越 25 dB 的相邻档位；负向频偏一行的“仍可用”为 0 Hz，' +
-  '即该方向没有任何非零档位满足判据。声学与组合两行在最低档位即低于阈值，故第一列填“低于阈值”。' +
-  '数据来自 tests/degradation-matrix-results.json。')}
+  '注：两列分别为「最后一档达到 25 dB 的档位」与其后「第一档不达标的档位」，' +
+  '右列为该达标档位高出判据的余量。负向频偏的达标档为 0 Hz，即该方向没有任何非零档位达标；' +
+  '声学与组合两维的最低档位已在判据之下，故没有达标档。' +
+  '由于采用两位小数，个别档位与判据只差百分之几 dB（如噪声维 25.27 对 25.00），' +
+  '这类「刚好达标」不应被读作还有余量。数据来自 tests/degradation-matrix-results.json。')}
+<p>表 11 有一处读数值得单独提醒。按「最后一档达标」看，背景噪声容忍到 30 dB 而削波容忍到 1.5 倍，似乎噪声与削波都还不错；但把余量一列连起来看，两者的性质完全不同。噪声维的五个档位只铺开 4.8 dB——30 dB 得 ${dbOf('AWGN', 'SNR 30 dB')} dB，一路缓降到 6 dB 的 ${dbOf('AWGN', 'SNR 6 dB')} dB——曲线贴着判据线缓慢下滑，其「达标」是刚好压线；削波维则从 1× 的 ${dbOf('削波', '1×')} dB 平缓衰减到 8× 的 ${dbOf('削波', '8×')} dB，即便最重的一档仍高出判据数 dB。因此就「离失效还有多远」而言，噪声是余量最薄的一维，这一点在只看「是否达标」的表格里会丢失。</p>
 <p>三项结论值得单独指出。第一，频率失谐的响应左右不对称：正向 +50 Hz 仍有 ${dbOf('频率偏移', '+50 Hz')} dB，而负向 −30 Hz 只有 ${dbOf('频率偏移', '-30 Hz')} dB。这一不对称在第 6.4 节被定位到图像搜索带下界与 1500 Hz 消隐音重叠，并非符号相关的实现缺陷。第二，最脆弱的一环是声学路径：实测 RT60 0.20 s 即降到 ${dbOf('声学路径', 'RT60 0.20 s')} dB，比任何同等“听感”损伤都严重。原因是混响破坏的是标定头那四段稳态音的相位一致性，而解码的第一步正是靠这一模式识别起点。第三，组合退化几乎总是致命：单独施加时仍可解码的两三种损伤叠加后，没有任何一档达到判据。</p>
 <p>图 15 把六类退化的解码结果与真值并排列出，使读者可以核对表中的数字与图像的观感是否一致——例如 ${dbOf('频率偏移', '+50 Hz')} dB 的一格确实只是轻微色度偏移，而 ${dbOf('频率偏移', '-30 Hz')} dB 的一格已经出现明显的横向撕裂与色带。</p>
 ${FIG15}

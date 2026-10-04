@@ -938,9 +938,9 @@
 <caption>表 8 PD 族解码测试结果</caption>
 <thead><tr><th>测试项</th><th>阈值</th><th>实测</th><th>音频时长</th><th>备注</th></tr></thead>
 <tbody>
-<tr><td>PD120 往返（合成细节图）</td><td>> 25</td><td>32.46 dB</td><td>127.11 s</td><td>42420 ms</td></tr>
+<tr><td>PD120 往返（合成细节图）</td><td>> 25</td><td>32.46 dB</td><td>127.11 s</td><td>41599 ms</td></tr>
 <tr><td>PD120 往返（彩色色条图）</td><td>> 25</td><td>28.49 dB</td><td>—</td><td>6/6 色相正确</td></tr>
-<tr><td>PD180 往返（合成细节图）</td><td>> 25</td><td>32.62 dB</td><td>187.43 s</td><td>44857 ms</td></tr>
+<tr><td>PD180 往返（合成细节图）</td><td>> 25</td><td>32.62 dB</td><td>187.43 s</td><td>40777 ms</td></tr>
 <tr><td>Martin M1 往返（对照，确认未回归）</td><td>> 25</td><td>32.02 dB</td><td>—</td><td>—</td></tr>
 <tr><td>表结构断言</td><td>全部通过</td><td>25 项通过 / 0 项失败</td><td>—</td><td>含行对时序、系数和为零、两模式共用路径</td></tr>
 </tbody>
@@ -1055,36 +1055,36 @@
 <text x="648" y="18" fill="#7d8794" font-size="10.5">曲线 · 可用范围</text>
 <line x1="648" y1="41" x2="668" y2="41" stroke="#4c9aff" stroke-width="2.6"/>
 <circle cx="658" cy="41" r="3" fill="#4c9aff"/>
-<text x="676" y="38" fill="#c8d0da" font-size="11.5">加性噪声：可用至 30 dB 与 20 dB 之间</text>
-<text x="676" y="53" fill="#8d97a3" font-size="10.5">30 dB 25.3 dB → 20 dB 24.8 dB</text>
+<text x="676" y="38" fill="#c8d0da" font-size="11.5">加性噪声：可用至 30 dB（25.27 dB）</text>
+<text x="676" y="53" fill="#8d97a3" font-size="10.5">再降到 20 dB 即不达标（24.84 dB，判据 25）</text>
 <line x1="648" y1="83" x2="668" y2="83" stroke="#f5a623" stroke-width="2.6"/>
 <circle cx="658" cy="83" r="3" fill="#f5a623"/>
-<text x="676" y="80" fill="#c8d0da" font-size="11.5">硬削波：可用至 1.5× 与 2× 之间</text>
-<text x="676" y="95" fill="#8d97a3" font-size="10.5">1.5× 25.1 dB → 2× 24.9 dB</text>
+<text x="676" y="80" fill="#c8d0da" font-size="11.5">硬削波：可用至 1.5×（25.13 dB）</text>
+<text x="676" y="95" fill="#8d97a3" font-size="10.5">再降到 2× 即不达标（24.92 dB，判据 25）</text>
 <line x1="648" y1="125" x2="668" y2="125" stroke="#e8574a" stroke-width="2.6"/>
 <circle cx="658" cy="125" r="3" fill="#e8574a"/>
-<text x="676" y="122" fill="#c8d0da" font-size="11.5">频率失谐（正向）：可用至 +50 Hz 与 +100 Hz 之间</text>
-<text x="676" y="137" fill="#8d97a3" font-size="10.5">+50 Hz 26.8 dB → +100 Hz 6.5 dB</text>
+<text x="676" y="122" fill="#c8d0da" font-size="11.5">频率失谐（正向）：可用至 +50 Hz（26.80 dB）</text>
+<text x="676" y="137" fill="#8d97a3" font-size="10.5">再降到 +100 Hz 即不达标（6.55 dB，判据 25）</text>
 <line x1="648" y1="167" x2="668" y2="167" stroke="#ff8f7a" stroke-width="2.6"/>
 <circle cx="658" cy="167" r="3" fill="#ff8f7a"/>
-<text x="676" y="164" fill="#c8d0da" font-size="11.5">频率失谐（负向）：起点即低于阈值</text>
-<text x="676" y="179" fill="#8d97a3" font-size="10.5">-5 Hz 23.7 dB</text>
+<text x="676" y="164" fill="#c8d0da" font-size="11.5">频率失谐（负向）：起点即不达标</text>
+<text x="676" y="179" fill="#8d97a3" font-size="10.5">-5 Hz 23.68 dB（判据 25）</text>
 <line x1="648" y1="209" x2="668" y2="209" stroke="#9b7dea" stroke-width="2.6"/>
 <circle cx="658" cy="209" r="3" fill="#9b7dea"/>
-<text x="676" y="206" fill="#c8d0da" font-size="11.5">采样率失配：可用至 0 % 与 0.05 % 之间</text>
-<text x="676" y="221" fill="#8d97a3" font-size="10.5">0 % 25.4 dB → 0.05 % 23.3 dB</text>
+<text x="676" y="206" fill="#c8d0da" font-size="11.5">采样率失配：可用至 0 %（25.44 dB）</text>
+<text x="676" y="221" fill="#8d97a3" font-size="10.5">再降到 0.05 % 即不达标（23.34 dB，判据 25）</text>
 <line x1="648" y1="251" x2="668" y2="251" stroke="#37b98a" stroke-width="2.6"/>
 <circle cx="658" cy="251" r="3" fill="#37b98a"/>
-<text x="676" y="248" fill="#c8d0da" font-size="11.5">声学路径（混响）：起点即低于阈值</text>
-<text x="676" y="263" fill="#8d97a3" font-size="10.5">0.20 17.8 dB</text>
+<text x="676" y="248" fill="#c8d0da" font-size="11.5">声学路径（混响）：起点即不达标</text>
+<text x="676" y="263" fill="#8d97a3" font-size="10.5">0.20 17.81 dB（判据 25）</text>
 <line x1="648" y1="293" x2="668" y2="293" stroke="#c9a227" stroke-width="2.6"/>
 <circle cx="658" cy="293" r="3" fill="#c9a227"/>
-<text x="676" y="290" fill="#c8d0da" font-size="11.5">组合退化：起点即低于阈值</text>
-<text x="676" y="305" fill="#8d97a3" font-size="10.5">灯下干净（RT60 0.3 + +10 Hz 失谐） 10.2 dB</text>
+<text x="676" y="290" fill="#c8d0da" font-size="11.5">组合退化：起点即不达标</text>
+<text x="676" y="305" fill="#8d97a3" font-size="10.5">灯下干净（RT60 0.3 + +10 Hz 失谐） 10.23 dB（判据 25）</text>
 <line x1="648" y1="335" x2="668" y2="335" stroke="#6f7b8a" stroke-width="2.6"/>
 <circle cx="658" cy="335" r="3" fill="#6f7b8a"/>
-<text x="676" y="332" fill="#c8d0da" font-size="11.5">JPEG 重编码：本阶梯全程可用</text>
-<text x="676" y="347" fill="#8d97a3" font-size="10.5">最低 28.3 dB（q30）</text>
+<text x="676" y="332" fill="#c8d0da" font-size="11.5">JPEG 重编码：本阶梯全程达标</text>
+<text x="676" y="347" fill="#8d97a3" font-size="10.5">最低 28.30 dB（q30）</text>
 <rect x="58" y="478" width="9" height="9" fill="#4c9aff" rx="1.5"/>
 <text x="72" y="486" fill="#8d97a3" font-size="10">加性噪声：clean · 30 dB · 20 dB · 15 dB · 10 dB · 6 dB</text>
 <rect x="58" y="495" width="9" height="9" fill="#f5a623" rx="1.5"/>
@@ -1111,19 +1111,20 @@
 <div class="table-wrap">
 <table id="11">
 <caption>表 11 六类退化的临界参数（Scottie S1，合成测试图，判据 25 dB）</caption>
-<thead><tr><th>退化维度</th><th>仍可用</th><th>已不可用</th><th>临界处 PSNR</th><th>实测依据</th></tr></thead>
+<thead><tr><th>退化维度</th><th>最后一档达标</th><th>第一档不达标</th><th>两档实测 PSNR</th><th>达标档余量</th><th>实测依据</th></tr></thead>
 <tbody>
-<tr><td>加性噪声（AWGN）</td><td>20 dB</td><td>15 dB</td><td>24.84 → 24.11</td><td>10 dB 时降至 22.19 dB，噪声在图上表现为色度带</td></tr>
-<tr><td>硬削波</td><td>1.5×</td><td>2×</td><td>25.13 → 24.92</td><td>8× 仍有 22.93 dB，与调频信号信息载于瞬时频率、削波保留过零点一致</td></tr>
-<tr><td>频率失谐（正向）</td><td>+50 Hz</td><td>+100 Hz</td><td>26.80 → 6.55</td><td>正向容忍度很高</td></tr>
-<tr><td>频率失谐（负向）</td><td>0 Hz</td><td>−5 Hz</td><td>25.44 → 23.68</td><td>负向从第一档起即跌破，根因见 6.4 节</td></tr>
-<tr><td>采样率失配</td><td>0 %</td><td>0.05 %</td><td>25.44 → 23.34</td><td>0.2 % 时 17.75 dB，2 % 完全解不出</td></tr>
-<tr><td>声学路径（混响）</td><td>低于阈值</td><td>RT60 0.20 s</td><td>—</td><td>实测 RT60 0.20 s 即 17.81 dB，0.60 s 起无法解码</td></tr>
-<tr><td>组合退化</td><td>低于阈值</td><td>全部档位</td><td>—</td><td>最轻的一档（RT60 0.3 + 10 Hz 失谐）即 10.23 dB</td></tr>
+<tr><td>加性噪声（AWGN）</td><td>30 dB</td><td>20 dB</td><td>25.27 → 24.84</td><td>+0.27 dB</td><td>余量最薄的一维；10 dB 时 22.19 dB，噪声在图上表现为色度带</td></tr>
+<tr><td>硬削波</td><td>1.5×</td><td>2×</td><td>25.13 → 24.92</td><td>+0.13 dB</td><td>衰减平缓：8× 仍有 22.93 dB，与调频信号信息载于瞬时频率、削波保留过零点一致</td></tr>
+<tr><td>频率失谐（正向）</td><td>+50 Hz</td><td>+100 Hz</td><td>26.80 → 6.55</td><td>+1.80 dB</td><td>正向余量充足</td></tr>
+<tr><td>频率失谐（负向）</td><td>0 Hz</td><td>−5 Hz</td><td>25.44 → 23.68</td><td>+0.44 dB</td><td>负向从第一个非零档位起即不达标，根因见 6.4 节</td></tr>
+<tr><td>采样率失配</td><td>0 %</td><td>0.05 %</td><td>25.44 → 23.34</td><td>+0.44 dB</td><td>0.2 % 时 17.75 dB，2 % 完全解不出</td></tr>
+<tr><td>声学路径（混响）</td><td>无（0.20 s 即不达标）</td><td>RT60 0.20 s</td><td>— → 17.81</td><td>—</td><td>最低档位仍未达标；0.60 s 起无法解码</td></tr>
+<tr><td>组合退化</td><td>无（全部档位均不达标）</td><td>全部档位</td><td>—</td><td>—</td><td>最轻的一档（RT60 0.3 + 10 Hz 失谐）即 10.23 dB</td></tr>
 </tbody>
 </table>
-<p class="table-note">注：同一维度的“仍可用/已不可用”两列给出跨越 25 dB 的相邻档位；负向频偏一行的“仍可用”为 0 Hz，即该方向没有任何非零档位满足判据。声学与组合两行在最低档位即低于阈值，故第一列填“低于阈值”。数据来自 tests/degradation-matrix-results.json。</p>
+<p class="table-note">注：两列分别为「最后一档达到 25 dB 的档位」与其后「第一档不达标的档位」，右列为该达标档位高出判据的余量。负向频偏的达标档为 0 Hz，即该方向没有任何非零档位达标；声学与组合两维的最低档位已在判据之下，故没有达标档。由于采用两位小数，个别档位与判据只差百分之几 dB（如噪声维 25.27 对 25.00），这类「刚好达标」不应被读作还有余量。数据来自 tests/degradation-matrix-results.json。</p>
 </div>
+<p>表 11 有一处读数值得单独提醒。按「最后一档达标」看，背景噪声容忍到 30 dB 而削波容忍到 1.5 倍，似乎噪声与削波都还不错；但把余量一列连起来看，两者的性质完全不同。噪声维的五个档位只铺开 4.8 dB——30 dB 得 25.27 dB，一路缓降到 6 dB 的 20.43 dB——曲线贴着判据线缓慢下滑，其「达标」是刚好压线；削波维则从 1× 的 25.44 dB 平缓衰减到 8× 的 22.93 dB，即便最重的一档仍高出判据数 dB。因此就「离失效还有多远」而言，噪声是余量最薄的一维，这一点在只看「是否达标」的表格里会丢失。</p>
 <p>三项结论值得单独指出。第一，频率失谐的响应左右不对称：正向 +50 Hz 仍有 26.80 dB，而负向 −30 Hz 只有 13.42 dB。这一不对称在第 6.4 节被定位到图像搜索带下界与 1500 Hz 消隐音重叠，并非符号相关的实现缺陷。第二，最脆弱的一环是声学路径：实测 RT60 0.20 s 即降到 17.81 dB，比任何同等“听感”损伤都严重。原因是混响破坏的是标定头那四段稳态音的相位一致性，而解码的第一步正是靠这一模式识别起点。第三，组合退化几乎总是致命：单独施加时仍可解码的两三种损伤叠加后，没有任何一档达到判据。</p>
 <p>图 15 把六类退化的解码结果与真值并排列出，使读者可以核对表中的数字与图像的观感是否一致——例如 26.80 dB 的一格确实只是轻微色度偏移，而 13.42 dB 的一格已经出现明显的横向撕裂与色带。</p>
 <figure class="figure" id="fig15" role="group" aria-labelledby="figcap15">

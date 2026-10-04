@@ -55,10 +55,15 @@ check(html.indexOf('Robot36') >= 0 && html.indexOf('原因是没有它们的逐�
  * values that were all legitimately sourced elsewhere. Scoping to the chapter is what makes this assertion
  * mean "this chapter does not quote a number the matrix lacks".
  *
+ * VALUES ARE CLASSIFIED BY SIGN, not matched by a bare pattern. A signed value ("+0.27 dB") is a MARGIN
+ * relative to the 25 dB criterion, not a PSNR, so it is checked against 25 + value instead of against the
+ * matrix. Without that distinction the margin column added to table 11 made this check report four
+ * unsourced PSNRs (0.27, 0.13, 1.80, 0.44) that were all correctly derived - a false failure caused by the
+ * checker not knowing about the new column.
+ *
  * IT ALSO DEPENDS ON THE MATRIX BEING COMPLETE. A partial run (`--only`) used to write its one row over the
- * canonical results file, and this check would then report the chapter's numbers as unsourced - which is a
- * true statement about a broken input, but an ambiguous one. The row count is asserted first so the failure
- * names the real cause instead of looking like a documentation error.
+ * canonical results file, and this check would then report the chapter's numbers as unsourced - true about a
+ * broken input, but ambiguous. The row count is asserted first so the failure names the real cause.
  */
 {
   const results = JSON.parse(fs.readFileSync(path.join(ROOT, 'tests', 'degradation-matrix-results.json'), 'utf8'));
@@ -66,18 +71,34 @@ check(html.indexOf('Robot36') >= 0 && html.indexOf('原因是没有它们的逐�
   check(rows.length >= 40, '矩阵结果文件完整（≥40 行，非部分运行覆盖）',
     rows.length + ' 行' + (rows.length < 40 ? ' —— 请重跑 node tests/degradation-matrix.js --control pattern' : ''));
 
-  const known = new Set();
-  for (const r of rows) if (r.psnr != null) known.add(r.psnr.toFixed(2));
+  const knownPsnr = new Set();
+  const knownMargin = new Set();
+  for (const r of rows) {
+    if (r.psnr == null) continue;
+    knownPsnr.add(r.psnr.toFixed(2));
+    // a margin is what a two-decimal PSNR can be said to clear 25 dB by
+    knownMargin.add(((r.psnr - 25 >= 0 ? '+' : '') + (r.psnr - 25).toFixed(2)));
+  }
 
   const start = html.indexOf('5.9 抗干扰能力实测');
   const end = html.indexOf('<h2>6 讨论</h2>');
   check(start >= 0 && end > start, '能定位 §5.9 的起止');
   const section = html.slice(start, end);
-  const figuresInSection = [...section.matchAll(/(\d+\.\d\d) dB/g)].map((m) => m[1]);
-  const unknown = figuresInSection.filter((v) => !known.has(v));
-  check(figuresInSection.length > 0, '§5.9 中含 PSNR 数值', String(figuresInSection.length) + ' 处');
-  check(unknown.length === 0, '§5.9 引用的 PSNR 都能在矩阵结果中查到',
-    unknown.length ? '查不到: ' + [...new Set(unknown)].join(', ') : figuresInSection.length + ' 处');
+
+  const plain = [...section.matchAll(/(?<![+\-−])(\d+\.\d\d) dB/g)].map((m) => m[1]);
+  const signed = [...section.matchAll(/([+\-−]\d+\.\d\d) dB/g)]
+    .map((m) => m[1].replace('−', '-'));
+
+  check(plain.length > 0, '§5.9 中含 PSNR 数值', String(plain.length) + ' 处');
+  const badPlain = plain.filter((v) => !knownPsnr.has(v));
+  check(badPlain.length === 0, '§5.9 引用的 PSNR 都能在矩阵结果中查到',
+    badPlain.length ? '查不到: ' + [...new Set(badPlain)].join(', ') : plain.length + ' 处');
+
+  if (signed.length) {
+    const badMargin = signed.filter((v) => !knownMargin.has(v));
+    check(badMargin.length === 0, '§5.9 引用的余量都等于某个实测 PSNR 减 25 dB',
+      badMargin.length ? '不符: ' + [...new Set(badMargin)].join(', ') : signed.length + ' 处');
+  }
 }
 
 check((html.match(/\uFFFD/g) || []).length === 0, '无编码损坏字符');

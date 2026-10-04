@@ -166,17 +166,32 @@ function crossing(points) {
   return { kind: 'always' };
 }
 
+/**
+ * Legend text for a series.
+ *
+ * THE PRIMARY FIGURE IS THE LAST RUNG THAT ACTUALLY MET THE CRITERION, not the bracketing pair.
+ *
+ * An earlier wording read "可用至 30 dB 与 20 dB 之间", which is true as a bracket but reads as
+ * "somewhere around 20-30 dB" - and on the noise ladder, 20 dB measures 24.84 dB, i.e. it FAILS. A reader
+ * (and, in this project's own README, the author) took away "20 dB still works", which is wrong. Naming the
+ * last passing rung with its measured value ("可用至信噪比 30 dB（25.27 dB）") cannot be misread that way, and
+ * the failing neighbour is reported separately so the margin is visible.
+ */
 function legendText(s, c) {
   if (c.kind === 'cross') {
-    return { main: s.label + '：可用至 ' + c.from.label + ' 与 ' + c.to.label + ' 之间',
-      detail: c.from.label + ' ' + c.from.psnr.toFixed(1) + ' dB → ' + c.to.label + ' ' + c.to.psnr.toFixed(1) + ' dB' };
+    return {
+      main: s.label + '：可用至 ' + c.from.label + '（' + c.from.psnr.toFixed(2) + ' dB）',
+      detail: '再降到 ' + c.to.label + ' 即不达标（' + c.to.psnr.toFixed(2) + ' dB，判据 ' + USABLE_DB + '）'
+    };
   }
   if (c.kind === 'always') {
     const worst = s.points.filter((p) => p.psnr != null).reduce((m, p) => (p.psnr < m.psnr ? p : m));
-    return { main: s.label + '：本阶梯全程可用', detail: '最低 ' + worst.psnr.toFixed(1) + ' dB（' + worst.label + '）' };
+    return { main: s.label + '：本阶梯全程达标',
+      detail: '最低 ' + worst.psnr.toFixed(2) + ' dB（' + worst.label + '）' };
   }
   if (c.kind === 'below') {
-    return { main: s.label + '：起点即低于阈值', detail: c.first.label + ' ' + c.first.psnr.toFixed(1) + ' dB' };
+    return { main: s.label + '：起点即不达标',
+      detail: c.first.label + ' ' + c.first.psnr.toFixed(2) + ' dB（判据 ' + USABLE_DB + '）' };
   }
   return { main: s.label + '：无有效点', detail: '' };
 }

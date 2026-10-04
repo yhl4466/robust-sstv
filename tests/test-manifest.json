@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-10-04T18:16:58.944Z",
+  "generatedAt": "2026-10-04T18:39:38.603Z",
   "node": "v24.19.0",
   "ran": false,
   "totals": {
-    "entries": 70,
-    "verdictSuites": 23,
+    "entries": 72,
+    "verdictSuites": 25,
     "verdictPass": 0,
     "verdictFail": 0,
     "diagnostic": 47
@@ -280,6 +280,20 @@
       "file": "tests/tech-section-cdp.js",
       "kind": "verdict",
       "covers": "tech.html §5.9 浏览器渲染与截图",
+      "exists": true,
+      "status": "not-run"
+    },
+    {
+      "file": "tests/demo-mobile-cdp.js",
+      "kind": "verdict",
+      "covers": "演示页窄视口（390px）布局与运行",
+      "exists": true,
+      "status": "not-run"
+    },
+    {
+      "file": "tests/check-readme-tolerance.js",
+      "kind": "verdict",
+      "covers": "README 抗干扰表逐项对照退化矩阵",
       "exists": true,
       "status": "not-run"
     },

@@ -1,5 +1,5 @@
 {
-  "measuredAt": "2026-10-04T18:26:24.041Z",
+  "measuredAt": "2026-10-04T18:48:59.164Z",
   "sampleRate": 48000,
   "quality": "standard",
   "passed": 25,
@@ -8,7 +8,7 @@
     "pd120Ramp": {
       "psnr": 32.46190939044247,
       "durationS": 127.11304000000118,
-      "decodeMs": 41599
+      "decodeMs": 40456
     },
     "pd120Colour": {
       "psnr": 28.49378242498435,
@@ -18,7 +18,7 @@
     "pd180": {
       "psnr": 32.62421733632446,
       "durationS": 187.4266400000027,
-      "decodeMs": 40777
+      "decodeMs": 40257
     },
     "m1Control": {
       "psnr": 32.0171970736861
