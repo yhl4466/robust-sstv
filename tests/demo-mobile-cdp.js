@@ -109,7 +109,7 @@ const PORT = 9375;
     console.error('demo mobile cdp failed: ' + (e && e.stack || e));
     failures++;
   } finally {
-    b.close();
+    await b.close();
   }
   process.exitCode = failures === 0 ? 0 : 1;
 })();

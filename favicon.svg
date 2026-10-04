@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64"
+     role="img" aria-label="Robust SSTV">
+  <title>Robust SSTV</title>
+  <!--
+    图标含义：一张由声音画出来的图。
+
+    构图取舍按「16x16 优先」决定。上一版把声波放在左、图片框放在右、中间用一条对角曲线相连，128px 下
+    好看，但 32px 起二者就开始互相挤压、16px 只剩一团——所以改成**把声波放进画面里**：一个圆角画面加
+    一条横贯的波，单个紧凑形状，缩小后仍是「框 + 波」两个可辨特征。这也更贴合 SSTV 本身：
+    图象就是逐行扫描出来的声音。
+
+    具体做法：
+      - 只有两条波形路径，线宽 4（缩到 16px 仍有约 1px 可见）；
+      - 波形跨满整个画面宽度，不留会糊成噪点的细小结构；
+      - 三个色块（天／山／地）保留，因为它们提供「这是张图」的信息，且都是大块纯色；
+      - 配色取自站点深色主题（背景 #0b0e13、强调色 #4c9aff）。
+  -->
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#121821"/>
+      <stop offset="1" stop-color="#0b0e13"/>
+    </linearGradient>
+    <clipPath id="pane">
+      <rect x="9" y="9" width="46" height="46" rx="6"/>
+    </clipPath>
+  </defs>
+
+  <rect width="64" height="64" rx="14" fill="url(#bg)"/>
+
+  <!-- 画面：天、太阳、山、地 -->
+  <g clip-path="url(#pane)">
+    <rect x="9" y="9" width="46" height="46" fill="#162031"/>
+    <circle cx="41" cy="24" r="5.5" fill="#e8c96a"/>
+    <path d="M9 42 L24 27 L36 42 Z" fill="#4a76b8"/>
+    <path d="M28 42 L42 30 L55 42 Z" fill="#6f9fd8"/>
+    <rect x="9" y="42" width="46" height="13" fill="#26507f"/>
+  </g>
+
+  <!-- 画面外框：也在提示「这是一张图」而不是任意方框 -->
+  <rect x="9" y="9" width="46" height="46" rx="6" fill="none" stroke="#4c9aff" stroke-width="4"/>
+
+  <!--
+    波：横贯画面，两端超出边框，强调声音穿过了整张图。
+
+    用 2 个周期而不是 3 个。3 个周期的版本在 128px 下更像"声波"，但每次振荡只占约 16 单位宽，缩到 16px
+    后整条线糊成一团噪点；2 个周期把每次振荡放宽到约 24 单位，16px 下仍能看出是波浪而不是污迹。
+  -->
+  <g stroke="#dce9fb" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <path d="M3 32 H11 C17 15, 23 49, 29 32 C35 15, 41 49, 47 32 C53 15, 59 49, 61 32"/>
+  </g>
+</svg>

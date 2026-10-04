@@ -92,14 +92,26 @@ async function launchBrowser(opts) {
   let ws = null;
   let closed = false;
 
-  const close = () => {
+  /**
+   * Close the browser and WAIT for the port to be released.
+   *
+   * `close()` used to be synchronous: it killed the process tree and returned, and the caller's next
+   * `launchBrowser` on the same port then failed with "端口已被占用" because the OS still had the socket in
+   * TIME_WAIT. A test that opens several pages in sequence (tests/check-site-icon.js) hit that on every page
+   * after the first - and the failure looked like a browser problem rather than a teardown race.
+   *
+   * The function remains usable without await (it returns a promise that the old call sites ignore), but it
+   * now resolves only once nothing answers on the port, so sequential reuse is safe.
+   */
+  const close = async () => {
     if (closed) return;
     closed = true;
     try { if (ws) ws.close(); } catch (e) { /* ignore */ }
     killTree(child.pid);
-    // give the OS a moment so the next run's port check does not race the teardown
-    try { execFileSync(process.platform === 'win32' ? 'cmd' : 'true',
-      process.platform === 'win32' ? ['/c', 'exit'] : [], { stdio: 'ignore' }); } catch (e) { /* ignore */ }
+    for (let i = 0; i < 40; i++) {
+      if (!(await portBusy(port))) return;
+      await sleep(100);
+    }
   };
 
   try {
@@ -160,6 +172,29 @@ async function launchBrowser(opts) {
 
     await send('Runtime.enable');
     await send('Page.enable');
+
+    /*
+     * WAIT FOR THE DOCUMENT, here rather than in every caller.
+     *
+     * The harness used to return as soon as the WebSocket was up, which is well before the page has parsed.
+     * Each test then had to sleep or poll for whatever it needed, and one that did neither (check-site-icon.js)
+     * found no <link> in an empty DOM and reported five failures for a page that was fine.
+     *
+     * The URL is part of the condition, and that is not cosmetic. A headless browser starts a new tab on
+     * `about:blank` and navigates to the target a moment later, so the first evaluate() calls can land in the
+     * BLANK document - and when navigation proceeds, the execution context is destroyed mid-call, which
+     * surfaces as "Execution context was destroyed" rather than as a timeout. Waiting until the context
+     * reports the URL we asked for avoids both the blank doc and that error.
+     *
+     * `interactive` is accepted as well as `complete` because scripts and the icon are already usable then,
+     * and a page with a slow subresource should not stall every test.
+     */
+    for (let i = 0; i < 150; i++) {
+      const st = await evaluate('({ url: location.href, ready: document.readyState })').catch(() => null);
+      if (st && st.url && st.url.indexOf('about:blank') < 0 &&
+          (st.ready === 'complete' || st.ready === 'interactive')) break;
+      await sleep(100);
+    }
 
     const shoot = async (outPath, clip) => {
       const r = await send('Page.captureScreenshot',

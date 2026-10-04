@@ -88,6 +88,8 @@ const SUITES = [
   { file: 'tech-section-cdp.js', kind: 'verdict', covers: 'tech.html §5.9 浏览器渲染与截图' },
   { file: 'demo-mobile-cdp.js', kind: 'verdict', covers: '演示页窄视口（390px）布局与运行' },
   { file: 'check-readme-tolerance.js', kind: 'verdict', covers: 'README 抗干扰表逐项对照退化矩阵' },
+  { file: 'check-site-icon.js', kind: 'verdict', covers: '五页站点图标声明与浏览器解码' },
+  { file: 'favicon-shot.js', kind: 'diagnostic', covers: '站点图标多尺寸渲染截图（16–128 px）' },
   { file: 'gen-degradation-figure.js', kind: 'diagnostic', covers: '生成六维退化并排对比图' },
   { file: 'diagnose-demo-convolve.js', kind: 'diagnostic', covers: '演示页卷积正确性（delta 响应对照 IR）' },
   { file: 'diagnose-convolve-fft.js', kind: 'diagnostic', covers: '复数 FFT 往返与逐抽头误差' },

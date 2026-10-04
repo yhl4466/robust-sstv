@@ -683,6 +683,9 @@ const page = `<!DOCTYPE html>
 <title>一种面向真实退化信道的抗干扰 SSTV 音频解码方法 · 技术报告</title>
 <meta name="description" content="Robust SSTV 项目技术报告：仿射频率标定、时钟恢复、里德-所罗门纠错与交织、模式表驱动的 PD 族解码，含二十六段真实音频验证与失败根因消融。">
 <link rel="stylesheet" href="css/style.css">
+${nav.ICON_BEGIN}
+${nav.ICON_LINK}
+${nav.ICON_END}
 </head>
 <body class="paper-page">
 ${nav.navHtml('tech.html')}

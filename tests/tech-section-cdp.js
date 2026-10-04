@@ -113,7 +113,7 @@ const PORT = 9373;
     console.error('tech cdp failed: ' + (e && e.stack || e));
     failures++;
   } finally {
-    b.close();
+    await b.close();
   }
   process.exitCode = failures === 0 ? 0 : 1;
 })();

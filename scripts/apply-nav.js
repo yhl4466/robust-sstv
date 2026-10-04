@@ -87,6 +87,15 @@ for (const [file, cfg] of Object.entries(PAGES)) {
     }
   }
 
+  /*
+   * The site icon lives in <head>, so it is injected separately from the nav block. Doing it here (rather
+   * than only in the demo-page generator) is what makes all pages consistent: this script is the one the
+   * README tells contributors to run, so a page it touches must come out with the icon.
+   */
+  const withIcon = nav.injectIcon(after);
+  if (withIcon !== after) { after = withIcon; how.push('icon'); }
+  else if (after.indexOf('rel="icon"') < 0) { console.log(`!! ${file}: 未能注入站点图标（缺少 </head>）`); }
+
   if (after === before) { console.log(`-- ${file}: unchanged`); continue; }
   changed++;
   console.log(`OK ${file}  (${how.join(', ')})`);

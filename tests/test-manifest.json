@@ -1,13 +1,13 @@
 {
-  "generatedAt": "2026-10-04T18:39:38.603Z",
+  "generatedAt": "2026-10-04T20:16:12.341Z",
   "node": "v24.19.0",
   "ran": false,
   "totals": {
-    "entries": 72,
-    "verdictSuites": 25,
+    "entries": 74,
+    "verdictSuites": 26,
     "verdictPass": 0,
     "verdictFail": 0,
-    "diagnostic": 47
+    "diagnostic": 48
   },
   "results": [
     {
@@ -294,6 +294,20 @@
       "file": "tests/check-readme-tolerance.js",
       "kind": "verdict",
       "covers": "README 抗干扰表逐项对照退化矩阵",
+      "exists": true,
+      "status": "not-run"
+    },
+    {
+      "file": "tests/check-site-icon.js",
+      "kind": "verdict",
+      "covers": "五页站点图标声明与浏览器解码",
+      "exists": true,
+      "status": "not-run"
+    },
+    {
+      "file": "tests/favicon-shot.js",
+      "kind": "diagnostic",
+      "covers": "站点图标多尺寸渲染截图（16–128 px）",
       "exists": true,
       "status": "not-run"
     },
