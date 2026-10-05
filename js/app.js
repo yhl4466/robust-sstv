@@ -719,19 +719,43 @@
   });
 
   // ==================================================================== boot
+  /*
+   * boot() IS WRAPPED, and that is a deliberate change.
+   *
+   * Every step runs in sequence and the two controls that come out EMPTY when it fails (解码精度 is filled by
+   * initQuality, 本版本支持的模式 keeps its "—" placeholder) are exactly the ones a user reported missing.
+   * Without a catch, a throw anywhere in this chain produces a half-initialised page with NO visible error:
+   * the selects render as empty boxes and the console stays quiet from the user's point of view. That is the
+   * worst failure shape there is - it looks like the feature was removed rather than broken.
+   *
+   * Reporting into #decStatus means a failure is visible where the user is already looking, and naming the
+   * failing step makes it diagnosable without opening devtools.
+   */
   function boot() {
-    initModes();
-    initQuality();
-    renderExtensions();
-    initPayloadPanel();
-    $('imgInput').addEventListener('change', function () { setTimeout(updatePayloadAvailability, 1200); });
-    $('modeSelect').addEventListener('change', function () { setTimeout(updatePayloadAvailability, 600); });
-    // re-run the pre-flight prediction whenever a carrier/QIM parameter changes
-    ['blockSelect', 'deltaSelect', 'fecSelect', 'ilSelect'].forEach(function (id) {
-      $(id).addEventListener('change', updatePayloadAvailability);
-    });
-    drawThumbPair(new Uint8Array(THUMB_BYTES), new Uint8Array(THUMB_BYTES));
-    $('backendBadge').textContent = Channel.Backend.mode;
+    try {
+      initModes();
+      initQuality();
+      renderExtensions();
+      initPayloadPanel();
+      $('imgInput').addEventListener('change', function () { setTimeout(updatePayloadAvailability, 1200); });
+      $('modeSelect').addEventListener('change', function () { setTimeout(updatePayloadAvailability, 600); });
+      // re-run the pre-flight prediction whenever a carrier/QIM parameter changes
+      ['blockSelect', 'deltaSelect', 'fecSelect', 'ilSelect'].forEach(function (id) {
+        $(id).addEventListener('change', updatePayloadAvailability);
+      });
+      drawThumbPair(new Uint8Array(THUMB_BYTES), new Uint8Array(THUMB_BYTES));
+      $('backendBadge').textContent = Channel.Backend.mode;
+    } catch (e) {
+      var status = $('decStatus');
+      if (status) {
+        status.className = 'status err';
+        status.innerHTML = '页面初始化失败：<b>' + esc(e && e.message ? e.message : String(e)) +
+          '</b><br>部分控件（如「解码精度」）可能因此为空。请刷新页面；若反复出现，' +
+          '请把这条消息连同浏览器版本一起反馈。';
+      }
+      // also to the console, with the stack, for anyone who does open devtools
+      if (typeof console !== 'undefined' && console.error) console.error('boot() 失败:', e);
+    }
   }
   boot();
 })();

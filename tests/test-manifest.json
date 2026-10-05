@@ -1,13 +1,13 @@
 {
-  "generatedAt": "2026-10-04T20:16:12.341Z",
+  "generatedAt": "2026-10-05T01:44:59.393Z",
   "node": "v24.19.0",
   "ran": false,
   "totals": {
-    "entries": 74,
-    "verdictSuites": 26,
+    "entries": 77,
+    "verdictSuites": 28,
     "verdictPass": 0,
     "verdictFail": 0,
-    "diagnostic": 48
+    "diagnostic": 49
   },
   "results": [
     {
@@ -301,6 +301,27 @@
       "file": "tests/check-site-icon.js",
       "kind": "verdict",
       "covers": "五页站点图标声明与浏览器解码",
+      "exists": true,
+      "status": "not-run"
+    },
+    {
+      "file": "tests/diagnose-boot-ids.js",
+      "kind": "verdict",
+      "covers": "index.html 元素 id 覆盖（boot 路径不中断）",
+      "exists": true,
+      "status": "not-run"
+    },
+    {
+      "file": "tests/verify-boot-error-visible.js",
+      "kind": "verdict",
+      "covers": "boot 失败对用户可见（故障注入验证）",
+      "exists": true,
+      "status": "not-run"
+    },
+    {
+      "file": "tests/diagnose-index-controls.js",
+      "kind": "diagnostic",
+      "covers": "index.html 控制项是否填充与解码联动",
       "exists": true,
       "status": "not-run"
     },
